@@ -16,7 +16,8 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true
-		}
+		},
+		"includes": ["!/components/ui/"]
 	},
 	"javascript": {
 		"formatter": {
