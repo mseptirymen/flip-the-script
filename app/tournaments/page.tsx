@@ -29,15 +29,14 @@ export default function Page() {
 						<Breadcrumb>
 							<BreadcrumbList>
 								<BreadcrumbItem className="hidden md:block">
-									<BreadcrumbLink href="#">Flip the Script</BreadcrumbLink>
+									<BreadcrumbLink href="#">Tournaments</BreadcrumbLink>
 								</BreadcrumbItem>
 							</BreadcrumbList>
 						</Breadcrumb>
 					</div>
 				</header>
 				<div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-					<h1 className="font-medium">Welcome!</h1>
-					<p>Select an option from the sidebar to get started.</p>
+					<p>Tournament list coming soon.</p>
 				</div>
 			</SidebarInset>
 		</SidebarProvider>
