@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState, use } from "react"
 import { notFound } from "next/navigation"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { TournamentRounds } from "@/components/tournaments/tournament-rounds"
@@ -15,15 +18,48 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { getTournament } from "@/lib/db"
+import { getTournament, Tournament } from "@/lib/db"
 
 interface TournamentDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function TournamentDetailPage({ params }: TournamentDetailPageProps) {
-  const { id } = await params
-  const tournament = await getTournament(id)
+export default function TournamentDetailPage({ params }: TournamentDetailPageProps) {
+  const { id } = use(params)
+  const [tournament, setTournament] = useState<Tournament | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    loadTournament()
+  }, [id])
+
+  async function loadTournament() {
+    const data = await getTournament(id)
+    setTournament(data || null)
+    setIsLoading(false)
+  }
+
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+            </div>
+          </header>
+          <div className="flex flex-1 items-center justify-center p-4 pt-0">
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
 
   if (!tournament) {
     notFound()
