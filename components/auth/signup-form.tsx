@@ -41,8 +41,17 @@ export function SignupForm() {
       setError(error.message)
       setIsLoading(false)
     } else {
-      router.push("/tournaments")
-      router.refresh()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (signInError) {
+        setError(signInError.message)
+        setIsLoading(false)
+      } else {
+        router.push("/tournaments")
+        router.refresh()
+      }
     }
   }
 
