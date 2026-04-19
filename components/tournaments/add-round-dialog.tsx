@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PokemonCombobox } from "./pokemon-combobox"
 import {
   Dialog,
   DialogContent,
@@ -33,24 +33,27 @@ export function AddRoundDialog({
   className,
 }: AddRoundDialogProps) {
   const [open, setOpen] = useState(false)
-  const [opponentArchetype, setOpponentArchetype] = useState("")
+  const [pokemon1, setPokemon1] = useState<number | null>(null)
+  const [pokemon2, setPokemon2] = useState<number | null>(null)
   const [result, setResult] = useState<"win" | "loss">("win")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!opponentArchetype.trim()) return
+    if (pokemon1 === null || pokemon2 === null) return
 
     setIsSubmitting(true)
     try {
       await addRound({
         tournament_id: tournamentId,
         round_number: nextRoundNumber,
-        opponent_deck_archetype: opponentArchetype.trim(),
+        opponent_pokemon_1: pokemon1,
+        opponent_pokemon_2: pokemon2,
         result,
       })
 
-      setOpponentArchetype("")
+      setPokemon1(null)
+      setPokemon2(null)
       setResult("win")
       setOpen(false)
       onRoundAdded?.()
@@ -77,13 +80,17 @@ export function AddRoundDialog({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="archetype">Opponent Deck Archetype *</Label>
-              <Input
-                id="archetype"
-                value={opponentArchetype}
-                onChange={(e) => setOpponentArchetype(e.target.value)}
-                placeholder="Charizard ex"
-                required
+              <Label htmlFor="pokemon1">Opponent Pokemon 1 *</Label>
+              <PokemonCombobox
+                value={pokemon1}
+                onChange={setPokemon1}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="pokemon2">Opponent Pokemon 2 *</Label>
+              <PokemonCombobox
+                value={pokemon2}
+                onChange={setPokemon2}
               />
             </div>
             <div className="grid gap-2">
@@ -108,7 +115,7 @@ export function AddRoundDialog({
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!opponentArchetype.trim() || isSubmitting}>
+            <Button type="submit" disabled={pokemon1 === null || pokemon2 === null || isSubmitting}>
               {isSubmitting ? "Adding..." : "Add Round"}
             </Button>
           </DialogFooter>
