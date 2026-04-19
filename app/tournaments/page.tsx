@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Empty, EmptyContent, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -83,16 +84,15 @@ export default function TournamentsPage() {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : tournaments.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <TrophyIcon className="mb-2 h-10 w-10 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    No tournaments yet. Click "Add Tournament" to log your first one.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <Empty>
+              <EmptyMedia variant="icon">
+                <TrophyIcon />
+              </EmptyMedia>
+              <EmptyTitle>No tournaments yet</EmptyTitle>
+              <EmptyDescription>
+                Click "Add Tournament" to log your first one.
+              </EmptyDescription>
+            </Empty>
           ) : (
             <div className="grid gap-4">
               {tournaments.map((tournament) => (
