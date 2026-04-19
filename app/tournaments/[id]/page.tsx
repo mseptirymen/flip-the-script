@@ -18,7 +18,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { getTournament, Tournament } from "@/lib/db"
+import { getTournament } from "@/lib/db"
+import type { Tournament } from "@/lib/types"
 
 interface TournamentDetailPageProps {
   params: Promise<{ id: string }>

@@ -15,7 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { getTournament, updateTournament, Round } from "@/lib/db"
+import { addRound } from "@/lib/db"
+import type { Round } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface AddRoundDialogProps {
@@ -42,19 +43,11 @@ export function AddRoundDialog({
 
     setIsSubmitting(true)
     try {
-      const tournament = await getTournament(tournamentId)
-      if (!tournament) return
-
-      const newRound: Round = {
-        id: crypto.randomUUID(),
-        roundNumber: nextRoundNumber,
-        opponentDeckArchetype: opponentArchetype.trim(),
+      await addRound({
+        tournament_id: tournamentId,
+        round_number: nextRoundNumber,
+        opponent_deck_archetype: opponentArchetype.trim(),
         result,
-      }
-
-      await updateTournament({
-        ...tournament,
-        rounds: [...tournament.rounds, newRound],
       })
 
       setOpponentArchetype("")

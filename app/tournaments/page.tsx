@@ -34,7 +34,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TrophyIcon } from "lucide-react"
-import { deleteTournament, getAllTournaments, Tournament } from "@/lib/db"
+import { deleteTournament, getAllTournaments } from "@/lib/db"
+import type { Tournament } from "@/lib/types"
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
@@ -105,7 +106,6 @@ export default function TournamentsPage() {
                       <CardContent>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           {tournament.date && <span>{tournament.date}</span>}
-                          <span>{tournament.rounds.length} rounds</span>
                         </div>
                       </CardContent>
                     </Card>

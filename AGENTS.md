@@ -58,12 +58,14 @@ npx shadcn@latest add button   # adds to components/ui/
 
 ## General Rules
 
+* Only commit changes when explicitly asked to by the user
 * Server Components by default
 * Add `"use client"` only when needed
 * Named exports only (no default exports)
 * Never modify `./components/ui` when asked to make changes to a shadcn component
 * Run `pnpm lint` after changes
 * Only commit when asked to, not after every change
+* always prefer cuid2 to UUID.
 
 
 ## Design Principles

@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
   - msw
   - sharp
+  - supabase
   - unrs-resolver

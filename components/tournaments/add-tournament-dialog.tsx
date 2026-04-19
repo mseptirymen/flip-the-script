@@ -34,14 +34,10 @@ export function AddTournamentDialog({ onTournamentAdded, className }: AddTournam
 
     setIsSubmitting(true)
     try {
-      const tournament = {
-        id: crypto.randomUUID(),
+      await addTournament({
         name: name.trim(),
         date: date || null,
-        rounds: [],
-        createdAt: Date.now(),
-      }
-      await addTournament(tournament)
+      })
       setName("")
       setDate("")
       setOpen(false)

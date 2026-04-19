@@ -1,67 +1,85 @@
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { supabase } from './supabase';
+import type { Round, Tournament } from './types';
 
-interface TournamentDBSchema extends DBSchema {
-  tournaments: {
-    key: string;
-    value: Tournament;
-    indexes: { 'by-date': string };
-  };
-}
-
-export interface Round {
-  id: string;
-  roundNumber: number;
-  opponentDeckArchetype: string;
-  result: 'win' | 'loss';
-}
-
-export interface Tournament {
-  id: string;
-  name: string;
-  date: string | null;
-  rounds: Round[];
-  createdAt: number;
-}
-
-const DB_NAME = 'flip-the-script';
-const DB_VERSION = 1;
-
-let dbPromise: Promise<IDBPDatabase<TournamentDBSchema>> | null = null;
-
-function getDB() {
-  if (!dbPromise) {
-    dbPromise = openDB<TournamentDBSchema>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        const store = db.createObjectStore('tournaments', { keyPath: 'id' });
-        store.createIndex('by-date', 'date');
-      },
-    });
-  }
-  return dbPromise;
-}
+export type { Round, Tournament };
 
 export async function getAllTournaments(): Promise<Tournament[]> {
-  const db = await getDB();
-  return db.getAll('tournaments');
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
 }
 
-export async function getTournament(id: string): Promise<Tournament | undefined> {
-  const db = await getDB();
-  return db.get('tournaments', id);
+export async function getTournament(id: string): Promise<Tournament | null> {
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return data;
 }
 
-export async function addTournament(tournament: Tournament): Promise<string> {
-  const db = await getDB();
-  await db.add('tournaments', tournament);
-  return tournament.id;
-}
+export async function addTournament(
+  tournament: Omit<Tournament, 'id' | 'created_at' | 'user_id'>
+): Promise<string> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
 
-export async function updateTournament(tournament: Tournament): Promise<void> {
-  const db = await getDB();
-  await db.put('tournaments', tournament);
+  const { data, error } = await supabase
+    .from('tournaments')
+    .insert({ ...tournament, user_id: user.id })
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
 }
 
 export async function deleteTournament(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('tournaments', id);
+  const { error } = await supabase.from('tournaments').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function getRoundsForTournament(
+  tournamentId: string
+): Promise<Round[]> {
+  const { data, error } = await supabase
+    .from('rounds')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .order('round_number', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function addRound(
+  round: Omit<Round, 'id' | 'created_at'>
+): Promise<string> {
+  const { data, error } = await supabase
+    .from('rounds')
+    .insert(round)
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+export async function deleteRound(id: string): Promise<void> {
+  const { error } = await supabase.from('rounds').delete().eq('id', id);
+  if (error) throw error;
 }
