@@ -2,6 +2,7 @@ export interface Tournament {
   id: string;
   user_id: string;
   name: string;
+  type: string | null;
   date: string | null;
   created_at: string;
 }
