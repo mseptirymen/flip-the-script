@@ -2,8 +2,20 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { Trash2 } from "lucide-react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AddTournamentDialog } from "@/components/tournaments/add-tournament-dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,15 +24,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrophyIcon } from "lucide-react"
-import { getAllTournaments, Tournament } from "@/lib/db"
+import { deleteTournament, getAllTournaments, Tournament } from "@/lib/db"
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
@@ -34,6 +47,11 @@ export default function TournamentsPage() {
     const data = await getAllTournaments()
     setTournaments(data)
     setIsLoading(false)
+  }
+
+  async function handleDelete(id: string) {
+    await deleteTournament(id)
+    await loadTournaments()
   }
 
   return (
@@ -78,19 +96,46 @@ export default function TournamentsPage() {
           ) : (
             <div className="grid gap-4">
               {tournaments.map((tournament) => (
-                <Link key={tournament.id} href={`/tournaments/${tournament.id}`}>
-                  <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">{tournament.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        {tournament.date && <span>{tournament.date}</span>}
-                        <span>{tournament.rounds.length} rounds</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <div key={tournament.id} className="group relative">
+                  <Link href={`/tournaments/${tournament.id}`}>
+                    <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">{tournament.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {tournament.date && <span>{tournament.date}</span>}
+                          <span>{tournament.rounds.length} rounds</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Tournament?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete "{tournament.name}" and all its rounds.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(tournament.id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               ))}
             </div>
           )}
