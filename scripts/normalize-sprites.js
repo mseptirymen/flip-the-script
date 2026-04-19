@@ -9,7 +9,7 @@ const ICONS_DIR = path.join(__dirname, '../public/icons');
 const TARGET_SIZE = 64;
 const PADDING = 4;
 const MAX_CONTENT = TARGET_SIZE - (PADDING * 2);
-const MIN_SIZE = 32;
+const MIN_SIZE = 48;
 
 async function processSprite(filePath) {
   const inputBuffer = fs.readFileSync(filePath);
