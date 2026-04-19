@@ -9,6 +9,7 @@ const ICONS_DIR = path.join(__dirname, '../public/icons');
 const TARGET_SIZE = 64;
 const PADDING = 4;
 const MAX_CONTENT = TARGET_SIZE - (PADDING * 2);
+const MIN_SIZE = 32;
 
 async function processSprite(filePath) {
   const inputBuffer = fs.readFileSync(filePath);
@@ -41,9 +42,14 @@ async function processSprite(filePath) {
   const contentWidth = maxX - minX + 1;
   const contentHeight = maxY - minY + 1;
 
-  const scale = Math.min(MAX_CONTENT / contentWidth, MAX_CONTENT / contentHeight, 1);
-  const newWidth = Math.round(contentWidth * scale);
-  const newHeight = Math.round(contentHeight * scale);
+  const scaleX = MAX_CONTENT / contentWidth;
+  const scaleY = MAX_CONTENT / contentHeight;
+  const minScale = Math.min(scaleX, scaleY, 1);
+  const enforcedScale = contentWidth < MIN_SIZE || contentHeight < MIN_SIZE
+    ? Math.max(MIN_SIZE / Math.max(contentWidth, contentHeight), minScale)
+    : minScale;
+  const newWidth = Math.round(contentWidth * enforcedScale);
+  const newHeight = Math.round(contentHeight * enforcedScale);
 
   const left = Math.round((TARGET_SIZE - newWidth) / 2);
   const top = Math.round((TARGET_SIZE - newHeight) / 2);
