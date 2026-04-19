@@ -21,6 +21,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { addTournament } from "@/lib/db"
 import { cn } from "@/lib/utils"
 
@@ -40,6 +50,7 @@ interface AddTournamentDialogProps {
 }
 
 export function AddTournamentDialog({ onTournamentAdded, className }: AddTournamentDialogProps) {
+  const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [type, setType] = useState("")
@@ -67,6 +78,141 @@ export function AddTournamentDialog({ onTournamentAdded, className }: AddTournam
     }
   }
 
+  function renderTypeSelect() {
+    if (isMobile) {
+      return (
+        <select
+          id="type"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+        >
+          <option value="">Select tournament type</option>
+          {TOURNAMENT_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      )
+    }
+
+    return (
+      <Select value={type} onValueChange={setType}>
+        <SelectTrigger id="type">
+          <SelectValue placeholder="Select tournament type" />
+        </SelectTrigger>
+        <SelectContent position="popper">
+          {TOURNAMENT_TYPES.map((t) => (
+            <SelectItem key={t.value} value={t.value}>
+              {t.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  function DialogForm() {
+    return (
+      <form onSubmit={handleSubmit}>
+        <DialogHeader>
+          <DialogTitle>Add Tournament</DialogTitle>
+          <DialogDescription>
+            Log a tournament you participated in.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Tournament Name *</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Regional Championship"
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="type">Type</Label>
+            {renderTypeSelect()}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="date">Date</Label>
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!name.trim() || isSubmitting}>
+            {isSubmitting ? "Adding..." : "Add Tournament"}
+          </Button>
+        </DialogFooter>
+      </form>
+    )
+  }
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
+          <Button className={cn("", className)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Tournament
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Add Tournament</DrawerTitle>
+            <DrawerDescription>
+              Log a tournament you participated in.
+            </DrawerDescription>
+          </DrawerHeader>
+          <form onSubmit={handleSubmit} className="grid gap-4 px-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name-mobile">Tournament Name *</Label>
+              <Input
+                id="name-mobile"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Regional Championship"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type-mobile">Type</Label>
+              {renderTypeSelect()}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="date-mobile">Date</Label>
+              <Input
+                id="date-mobile"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+            <DrawerFooter className="px-0">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!name.trim() || isSubmitting}>
+                {isSubmitting ? "Adding..." : "Add Tournament"}
+              </Button>
+            </DrawerFooter>
+          </form>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -76,58 +222,7 @@ export function AddTournamentDialog({ onTournamentAdded, className }: AddTournam
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Add Tournament</DialogTitle>
-            <DialogDescription>
-              Log a tournament you participated in.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Tournament Name *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Regional Championship"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="type">Type</Label>
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Select tournament type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TOURNAMENT_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!name.trim() || isSubmitting}>
-              {isSubmitting ? "Adding..." : "Add Tournament"}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogForm />
       </DialogContent>
     </Dialog>
   )
