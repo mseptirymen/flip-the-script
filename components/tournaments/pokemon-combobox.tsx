@@ -22,7 +22,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
   const [loading, setLoading] = useState(false)
   const [selectedDisplay, setSelectedDisplay] = useState<PokemonOption | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (value === null) {
@@ -46,7 +46,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
     }
 
     setLoading(true)
-    clearTimeout(debounceRef.current)
+    clearTimeout(debounceRef.current ?? undefined)
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
@@ -65,7 +65,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
       }
     }, 300)
 
-    return () => clearTimeout(debounceRef.current)
+    return () => clearTimeout(debounceRef.current ?? undefined)
   }, [search])
 
   function handleSelect(pokemon: PokemonOption) {
@@ -147,7 +147,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
           )}
         </>
       )}
-      {open && <div fixed inset-0" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-0" onClick={() => setOpen(false)} />}
     </div>
   )
 }
