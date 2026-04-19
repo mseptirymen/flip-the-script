@@ -90,7 +90,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
           <img
             src={`/icons/${value}.png`}
             alt=""
-            className="h-10 w-10 shrink-0 object-contain"
+            className="h-10 w-10 shrink-0 object-contain" style={{ imageRendering: 'pixelated' }}
             onError={(e) => {
               e.currentTarget.style.display = "none"
             }}
@@ -140,7 +140,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
                   <img
                     src={`/icons/${pokemon.id}.png`}
                     alt=""
-                    className="h-6 w-6 object-contain"
+                    className="h-6 w-6 object-contain" style={{ imageRendering: 'pixelated' }}
                     onError={(e) => e.currentTarget.style.display = "none"}
                   />
                   <span className="capitalize">{pokemon.name.replace(/-/g, " ")}</span>
