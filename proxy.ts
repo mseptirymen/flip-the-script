@@ -37,7 +37,9 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/auth/login") ||
     request.nextUrl.pathname.startsWith("/auth/signup")
 
-  const isProtectedPage = request.nextUrl.pathname.startsWith("/tournaments")
+  const isProtectedPage = request.nextUrl.pathname.startsWith("/tournaments") ||
+    request.nextUrl.pathname === "/"
+  const isRootPage = request.nextUrl.pathname === "/"
 
   if (!user && isProtectedPage) {
     const url = request.nextUrl.clone()
@@ -47,7 +49,13 @@ export async function proxy(request: NextRequest) {
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone()
-    url.pathname = "/tournaments"
+    url.pathname = "/dashboard"
+    return NextResponse.redirect(url)
+  }
+
+  if (user && isRootPage) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/dashboard"
     return NextResponse.redirect(url)
   }
 
