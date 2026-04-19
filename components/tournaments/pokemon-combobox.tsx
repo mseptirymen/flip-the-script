@@ -50,12 +50,15 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://api.pokeapi.co/v2/pokemon?limit=100000&q=${encodeURIComponent(search)}&name`
+          `/api/pokemon/search?q=${encodeURIComponent(search)}`
         )
         const data = await res.json()
-        const options = (data.results || []).slice(0, 10).map((p: { url: string; name: string }) => {
-          const id = parseInt(p.url.split("/").filter(Boolean).pop() || "0")
-          return { id, name: p.name }
+        const allResults = data.results || []
+        const filtered = allResults.filter((p: { name: string }) =>
+          p.name.toLowerCase().includes(search.toLowerCase())
+        )
+        const options = filtered.slice(0, 10).map((p: { id: number; name: string }) => {
+          return { id: p.id, name: p.name }
         }).filter((p: PokemonOption) => p.id > 0)
         setResults(options)
       } catch {
