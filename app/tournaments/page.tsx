@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   SidebarInset,
   SidebarProvider,
@@ -83,7 +84,11 @@ export default function TournamentsPage() {
           </div>
 
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <div className="grid gap-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
           ) : tournaments.length === 0 ? (
             <Empty className="border max-h-48">
               <EmptyMedia variant="icon">
