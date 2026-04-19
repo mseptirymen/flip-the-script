@@ -82,9 +82,24 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                       <span className="text-sm font-medium">
                         Round {round.round_number}
                       </span>
-                      <span className="text-sm text-muted-foreground">
-                        vs {round.opponent_deck_archetype}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <img
+                          src={`/icons/${round.opponent_pokemon_1}.png`}
+                          alt=""
+                          className="h-8 w-8 object-contain"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none"
+                          }}
+                        />
+                        <img
+                          src={`/icons/${round.opponent_pokemon_2}.png`}
+                          alt=""
+                          className="h-8 w-8 object-contain"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none"
+                          }}
+                        />
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={round.result === "win" ? "default" : "destructive"}>
