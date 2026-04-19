@@ -84,7 +84,7 @@ export default function TournamentsPage() {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : tournaments.length === 0 ? (
-            <Empty>
+            <Empty className="border max-h-48">
               <EmptyMedia variant="icon">
                 <TrophyIcon />
               </EmptyMedia>
