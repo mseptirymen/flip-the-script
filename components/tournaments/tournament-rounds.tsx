@@ -51,7 +51,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between">
         <h2 className="text-lg font-medium">Rounds</h2>
         <AddRoundDialog
           nextRoundNumber={rounds.length + 1}
@@ -78,7 +78,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
               <Card key={round.id}>
                 <CardContent className="pt-4 pb-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-end gap-3">
                       <span className="text-sm font-medium">
                         Round {round.round_number}
                       </span>

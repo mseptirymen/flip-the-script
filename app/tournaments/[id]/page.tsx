@@ -18,6 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { getTournament } from "@/lib/db"
 import type { Tournament } from "@/lib/types"
 
@@ -54,8 +55,13 @@ export default function TournamentDetailPage({ params }: TournamentDetailPagePro
               />
             </div>
           </header>
-          <div className="flex flex-1 items-center justify-center p-4 pt-0">
-            <p className="text-sm text-muted-foreground">Loading...</p>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mx-auto w-full max-w-3xl">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+            <div className="flex flex-col gap-2 mt-4">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -91,13 +97,15 @@ export default function TournamentDetailPage({ params }: TournamentDetailPagePro
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-          <div>
-            <h1 className="text-2xl font-bold">{tournament.name}</h1>
-            {tournament.date && (
-              <p className="text-sm text-muted-foreground mt-1">{tournament.date}</p>
-            )}
+          <div className="mx-auto w-full max-w-3xl">
+            <div>
+              <h1 className="text-2xl font-bold">{tournament.name}</h1>
+              {tournament.date && (
+                <p className="text-sm text-muted-foreground mt-1">{tournament.date}</p>
+              )}
+            </div>
+            <TournamentRounds tournamentId={id} />
           </div>
-          <TournamentRounds tournamentId={id} />
         </div>
       </SidebarInset>
     </SidebarProvider>
