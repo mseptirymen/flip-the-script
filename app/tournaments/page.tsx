@@ -66,7 +66,7 @@ export default function TournamentsPage() {
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
+              className="self-auto mr-2 h-4"
             />
             <Breadcrumb>
               <BreadcrumbList>
