@@ -11,7 +11,8 @@ export interface Round {
   id: string;
   tournament_id: string;
   round_number: number;
-  opponent_deck_archetype: string;
+  opponent_pokemon_1: number;
+  opponent_pokemon_2: number;
   result: 'win' | 'loss';
   created_at: string;
 }
