@@ -3,6 +3,7 @@ import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -30,7 +31,9 @@ export default function RootLayout({
 		>
 			<body>
 				<TooltipProvider>
-					<ThemeProvider>{children}</ThemeProvider>
+					<ThemeProvider>
+						<AuthProvider>{children}</AuthProvider>
+					</ThemeProvider>
 				</TooltipProvider>
 			</body>
 		</html>
