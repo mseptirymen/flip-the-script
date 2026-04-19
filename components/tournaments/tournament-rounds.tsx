@@ -86,7 +86,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                         <img
                           src={`/icons/${round.opponent_pokemon_1}.png`}
                           alt=""
-                          className="h-8 w-8 object-contain"
+                          className="h-8 w-8 shrink-0 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none"
                           }}
@@ -94,7 +94,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                         <img
                           src={`/icons/${round.opponent_pokemon_2}.png`}
                           alt=""
-                          className="h-8 w-8 object-contain"
+                          className="h-8 w-8 shrink-0 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none"
                           }}
