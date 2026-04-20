@@ -68,7 +68,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           {rounds
             .sort((a, b) => a.round_number - b.round_number)
             .map((round) => (
@@ -85,34 +85,32 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                       : "bg-red-500/10 hover:bg-red-500/20"
                   )}
                 >
-                  <CardContent className="pt-4 pb-4">
+                  <CardContent className="p-0">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-end gap-3">
-                        <span className="text-sm font-medium">
-                          Round {round.round_number}
-                        </span>
-                        <div className="flex items-center gap-0">
-                          <img
-                            src={`/icons/${round.opponent_pokemon_1}.png`}
-                            alt=""
-                            className="h-12 w-12 shrink-0 object-contain sprite-icon"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none"
-                            }}
-                          />
-                          <img
-                            src={`/icons/${round.opponent_pokemon_2}.png`}
-                            alt=""
-                            className="h-12 w-12 shrink-0 object-contain sprite-icon"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none"
-                            }}
-                          />
-                        </div>
+                      <span className="text-sm font-medium">
+                        Round {round.round_number}
+                      </span>
+                      <div className="flex items-center gap-0">
+                        <img
+                          src={`/icons/${round.opponent_pokemon_1}.png`}
+                          alt=""
+                          className="h-12 w-12 shrink-0 object-contain sprite-icon"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none"
+                          }}
+                        />
+                        <img
+                          src={`/icons/${round.opponent_pokemon_2}.png`}
+                          alt=""
+                          className="h-12 w-12 shrink-0 object-contain sprite-icon"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none"
+                          }}
+                        />
                       </div>
                       <Badge
                         variant={round.result === "win" ? "success" : "destructive"}
-                        className="h-7 px-3 text-sm font-semibold"
+                        className="h-7 px-3 text-sm font-semibold min-w-[2.5rem] text-center"
                       >
                         {round.result === "win" ? "W" : "L"}
                       </Badge>
