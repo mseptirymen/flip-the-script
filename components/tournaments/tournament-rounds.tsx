@@ -84,17 +84,17 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                       </span>
                       <div className="flex items-center gap-1">
                         <img
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${round.opponent_pokemon_1}.png`}
+                          src={`/icons/${round.opponent_pokemon_1}.png`}
                           alt=""
-                          className="h-12 w-12 shrink-0 object-contain" style={{ imageRendering: 'crisp-edges' }}
+                          className="h-12 w-12 shrink-0 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none"
                           }}
                         />
                         <img
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${round.opponent_pokemon_2}.png`}
+                          src={`/icons/${round.opponent_pokemon_2}.png`}
                           alt=""
-                          className="h-12 w-12 shrink-0 object-contain" style={{ imageRendering: 'crisp-edges' }}
+                          className="h-12 w-12 shrink-0 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none"
                           }}

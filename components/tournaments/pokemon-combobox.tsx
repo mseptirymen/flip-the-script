@@ -81,9 +81,9 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
       {value !== null && value > 0 ? (
         <div className="flex items-center gap-2">
           <img
-            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${value}.png`}
+            src={`/icons/${value}.png`}
             alt=""
-            className="h-10 w-10 shrink-0 object-contain" style={{ imageRendering: 'crisp-edges' }}
+            className="h-10 w-10 shrink-0 object-contain"
             onError={(e) => {
               e.currentTarget.style.display = "none"
             }}
@@ -131,9 +131,9 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                 >
                   <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                    src={`/icons/${pokemon.id}.png`}
                     alt=""
-                    className="h-6 w-6 object-contain" style={{ imageRendering: 'crisp-edges' }}
+                    className="h-6 w-6 object-contain"
                     onError={(e) => e.currentTarget.style.display = "none"}
                   />
                   <span className="capitalize">{pokemon.name.replace(/-/g, " ")}</span>
