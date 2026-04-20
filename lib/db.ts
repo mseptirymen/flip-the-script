@@ -83,3 +83,15 @@ export async function deleteRound(id: string): Promise<void> {
   const { error } = await supabase.from('rounds').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function updateRound(
+  id: string,
+  updates: Partial<Pick<Round, 'opponent_pokemon_1' | 'opponent_pokemon_2' | 'result'>>
+): Promise<void> {
+  const { error } = await supabase
+    .from('rounds')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) throw error;
+}

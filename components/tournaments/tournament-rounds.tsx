@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AddRoundDialog } from "@/components/tournaments/add-round-dialog"
-import { getRoundsForTournament, deleteRound, getTournament } from "@/lib/db"
+import { EditRoundDialog } from "@/components/tournaments/edit-round-dialog"
+import { getRoundsForTournament, getTournament } from "@/lib/db"
 import type { Round, Tournament } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 interface TournamentRoundsProps {
   tournamentId: string
@@ -33,11 +35,6 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
   }
 
   async function handleRoundAdded() {
-    await loadData()
-  }
-
-  async function handleDeleteRound(roundId: string) {
-    await deleteRound(roundId)
     await loadData()
   }
 
@@ -75,47 +72,54 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
           {rounds
             .sort((a, b) => a.round_number - b.round_number)
             .map((round) => (
-              <Card key={round.id}>
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-end gap-3">
-                      <span className="text-sm font-medium">
-                        Round {round.round_number}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <img
-                          src={`/icons/${round.opponent_pokemon_1}.png`}
-                          alt=""
-                          className="h-12 w-12 shrink-0 object-contain sprite-icon"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none"
-                          }}
-                        />
-                        <img
-                          src={`/icons/${round.opponent_pokemon_2}.png`}
-                          alt=""
-                          className="h-12 w-12 shrink-0 object-contain sprite-icon"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none"
-                          }}
-                        />
+              <EditRoundDialog
+                key={round.id}
+                round={round}
+                onRoundUpdated={loadData}
+              >
+                <Card
+                  className={cn(
+                    "p-4 cursor-pointer transition-colors border-0 shadow-none ring-0",
+                    round.result === "win"
+                      ? "bg-emerald-500/10 hover:bg-emerald-500/20"
+                      : "bg-red-500/10 hover:bg-red-500/20"
+                  )}
+                >
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-end gap-3">
+                        <span className="text-sm font-medium">
+                          Round {round.round_number}
+                        </span>
+                        <div className="flex items-center gap-0">
+                          <img
+                            src={`/icons/${round.opponent_pokemon_1}.png`}
+                            alt=""
+                            className="h-12 w-12 shrink-0 object-contain sprite-icon"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none"
+                            }}
+                          />
+                          <img
+                            src={`/icons/${round.opponent_pokemon_2}.png`}
+                            alt=""
+                            className="h-12 w-12 shrink-0 object-contain sprite-icon"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none"
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={round.result === "win" ? "default" : "destructive"}>
+                      <Badge
+                        variant={round.result === "win" ? "success" : "destructive"}
+                        className="h-7 px-3 text-sm font-semibold"
+                      >
                         {round.result === "win" ? "W" : "L"}
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteRound(round.id)}
-                      >
-                        Delete
-                      </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </EditRoundDialog>
             ))}
         </div>
       )}
