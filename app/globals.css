@@ -127,3 +127,10 @@
     @apply font-sans;
     }
 }
+
+.sprite-icon {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
