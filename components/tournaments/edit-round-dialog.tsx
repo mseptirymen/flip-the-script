@@ -35,7 +35,8 @@ export function EditRoundDialog({
   const [open, setOpen] = useState(false)
   const [pokemon1, setPokemon1] = useState<number | null>(round.opponent_pokemon_1)
   const [pokemon2, setPokemon2] = useState<number | null>(round.opponent_pokemon_2)
-  const [result, setResult] = useState<"win" | "loss">(round.result)
+  const [result, setResult] = useState<"win" | "loss" | "tie" | "bye" | "no_show">(round.result)
+  const [wentFirst, setWentFirst] = useState<boolean | null>(round.went_first)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -49,6 +50,7 @@ export function EditRoundDialog({
         opponent_pokemon_1: pokemon1,
         opponent_pokemon_2: pokemon2,
         result,
+        went_first: wentFirst,
       })
 
       setOpen(false)
@@ -76,6 +78,7 @@ export function EditRoundDialog({
       setPokemon1(round.opponent_pokemon_1)
       setPokemon2(round.opponent_pokemon_2)
       setResult(round.result)
+      setWentFirst(round.went_first)
       setShowDeleteConfirm(false)
     }
     setOpen(newOpen)
@@ -143,7 +146,7 @@ export function EditRoundDialog({
                 <Label>Result *</Label>
                 <RadioGroup
                   value={result}
-                  onValueChange={(value) => setResult(value as "win" | "loss")}
+                  onValueChange={(value) => setResult(value as "win" | "loss" | "tie" | "bye" | "no_show")}
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
@@ -154,8 +157,39 @@ export function EditRoundDialog({
                     <RadioGroupItem value="loss" id="loss" />
                     <Label htmlFor="loss">Loss</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="tie" id="tie" />
+                    <Label htmlFor="tie">Tie</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="bye" id="bye" />
+                    <Label htmlFor="bye">Bye</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no_show" id="no_show" />
+                    <Label htmlFor="no_show">No Show</Label>
+                  </div>
                 </RadioGroup>
               </div>
+              {result === "win" || result === "loss" || result === "tie" ? (
+                <div className="grid gap-2">
+                  <Label>You went *</Label>
+                  <RadioGroup
+                    value={wentFirst === true ? "first" : wentFirst === false ? "second" : ""}
+                    onValueChange={(value) => setWentFirst(value === "first")}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="first" id="first" />
+                      <Label htmlFor="first">First</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="second" id="second" />
+                      <Label htmlFor="second">Second</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              ) : null}
             </div>
             <DialogFooter className="gap-2 sm:gap-0">
               <Button
