@@ -13,6 +13,7 @@ export interface Round {
   round_number: number;
   opponent_pokemon_1: number;
   opponent_pokemon_2: number;
-  result: 'win' | 'loss';
+  result: 'win' | 'loss' | 'tie' | 'bye' | 'no_show';
+  went_first: boolean | null;
   created_at: string;
 }
