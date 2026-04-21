@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { ChevronDown, X, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface PokemonOption {
@@ -24,13 +25,31 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Fetch name when value changes and we don't have it cached
   useEffect(() => {
     if (value === null) {
       setSelectedDisplay(null)
       return
     }
-    setSelectedDisplay({ id: value, name: "" })
-  }, [value])
+
+    // Skip if we already have this pokemon's name cached
+    if (selectedDisplay?.id === value && selectedDisplay.name) {
+      return
+    }
+
+    // Only fetch if we don't have the name yet
+    if (selectedDisplay?.id === value && !selectedDisplay.name) {
+      return
+    }
+
+    // Fetch by ID from PokeAPI directly
+    fetch(`https://pokeapi.co/api/v2/pokemon/${value}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setSelectedDisplay({ id: value, name: data.name })
+      })
+      .catch(() => {})
+  }, [value, selectedDisplay])
 
   useEffect(() => {
     if (!search.trim()) {
@@ -65,6 +84,7 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
   }, [search])
 
   function handleSelect(pokemon: PokemonOption) {
+    setSelectedDisplay({ id: pokemon.id, name: pokemon.name })
     onChange(pokemon.id)
     setSearch("")
     setResults([])
@@ -88,13 +108,18 @@ export function PokemonCombobox({ value, onChange, className }: PokemonComboboxP
               e.currentTarget.style.display = "none"
             }}
           />
-          <button
+          <span className="capitalize text-sm text-foreground">
+            {selectedDisplay?.name.replace(/-/g, " ")}
+          </span>
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-foreground"
+            className="ml-auto"
           >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       ) : (
         <>

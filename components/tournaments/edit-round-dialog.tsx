@@ -122,20 +122,21 @@ export function EditRoundDialog({
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="flex flex-row gap-4">
-                <div className="grid gap-2 flex-1">
-                  <Label htmlFor="pokemon1">Opponent Pokemon 1 *</Label>
-                  <PokemonCombobox
-                    value={pokemon1}
-                    onChange={setPokemon1}
-                  />
-                </div>
-                <div className="grid gap-2 flex-1">
-                  <Label htmlFor="pokemon2">Opponent Pokemon 2 *</Label>
-                  <PokemonCombobox
-                    value={pokemon2}
-                    onChange={setPokemon2}
-                  />
+              <div className="grid gap-2">
+                <Label>Opponent's Pokemon *</Label>
+                <div className="flex flex-row gap-4">
+                  <div className="flex-1">
+                    <PokemonCombobox
+                      value={pokemon1}
+                      onChange={setPokemon1}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <PokemonCombobox
+                      value={pokemon2}
+                      onChange={setPokemon2}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="grid gap-2">
