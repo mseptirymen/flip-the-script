@@ -46,6 +46,31 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
     return <p className="text-sm text-muted-foreground">Tournament not found.</p>
   }
 
+  function getResultBadge(result: string) {
+    switch (result) {
+      case 'win': return { variant: 'success' as const, label: 'W' }
+      case 'loss': return { variant: 'destructive' as const, label: 'L' }
+      case 'tie': return { variant: 'secondary' as const, label: 'T' }
+      case 'bye': return { variant: 'outline' as const, label: 'B' }
+      case 'no_show': return { variant: 'outline' as const, label: 'N' }
+      default: return { variant: 'outline' as const, label: '?' }
+    }
+  }
+
+  function getOverallResult(round: Round): 'win' | 'loss' | 'tie' | 'other' {
+    const games = round.games || []
+    if (games.length === 0) return 'other'
+
+    const wins = games.filter((g) => g.result === 'win').length
+    const losses = games.filter((g) => g.result === 'loss').length
+    const ties = games.filter((g) => g.result === 'tie').length
+
+    if (wins > losses) return 'win'
+    if (losses > wins) return 'loss'
+    if (wins === losses && wins > 0) return 'tie'
+    return 'other'
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-end justify-between">
@@ -80,10 +105,10 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                 <Card
                   className={cn(
                     "p-4 cursor-pointer transition-colors border-0 shadow-none ring-0",
-                    round.result === "win" && "bg-emerald-500/10 hover:bg-emerald-500/20",
-                    round.result === "loss" && "bg-red-500/10 hover:bg-red-500/20",
-                    round.result === "tie" && "bg-yellow-500/10 hover:bg-yellow-500/20",
-                    (round.result === "bye" || round.result === "no_show") && "bg-muted hover:bg-muted/80"
+                    getOverallResult(round) === "win" && "bg-emerald-500/10 hover:bg-emerald-500/20",
+                    getOverallResult(round) === "loss" && "bg-red-500/10 hover:bg-red-500/20",
+                    getOverallResult(round) === "tie" && "bg-yellow-500/10 hover:bg-yellow-500/20",
+                    getOverallResult(round) === "other" && "bg-muted hover:bg-muted/80"
                   )}
                 >
                   <CardContent className="p-0">
@@ -109,20 +134,20 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                           }}
                         />
                       </div>
-                      <Badge
-                        variant={
-                          round.result === "win" ? "success" :
-                          round.result === "loss" ? "destructive" :
-                          round.result === "tie" ? "secondary" :
-                          "outline"
-                        }
-                        className="h-7 px-3 text-sm font-semibold min-w-[2.5rem] text-center"
-                      >
-                        {round.result === "win" ? "W" :
-                         round.result === "loss" ? "L" :
-                         round.result === "tie" ? "T" :
-                         round.result === "bye" ? "B" : "N"}
-                      </Badge>
+                      <div className="flex gap-1">
+                        {(round.games || []).map((game, index) => {
+                          const badge = getResultBadge(game.result)
+                          return (
+                            <Badge
+                              key={index}
+                              variant={badge.variant}
+                              className="h-7 w-7 p-0 text-sm font-semibold flex items-center justify-center"
+                            >
+                              {badge.label}
+                            </Badge>
+                          )
+                        })}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

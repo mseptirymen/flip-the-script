@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { PokemonCombobox } from "./pokemon-combobox"
@@ -17,10 +16,11 @@ import {
 import { addRound } from "@/lib/db"
 import { cn } from "@/lib/utils"
 
-interface RoundEntry {
-  pokemon1: number | null
-  pokemon2: number | null
-  result: 'win' | 'loss' | 'tie' | 'bye' | 'no_show' | null
+type GameResult = 'win' | 'loss' | 'tie'
+type RoundResult = 'bye' | 'no_show'
+
+interface GameEntry {
+  result: GameResult | null
   wentFirst: boolean | null
 }
 
@@ -31,6 +31,19 @@ interface AddRoundDialogProps {
   className?: string
 }
 
+function calculateRoundResult(games: GameEntry[]): GameResult | null {
+  const completedGames = games.filter((g) => g.result !== null)
+  if (completedGames.length === 0) return null
+
+  const wins = completedGames.filter((g) => g.result === 'win').length
+  const losses = completedGames.filter((g) => g.result === 'loss').length
+
+  if (wins > losses) return 'win'
+  if (losses > wins) return 'loss'
+  if (wins === losses && wins > 0) return 'tie'
+  return null
+}
+
 export function AddRoundDialog({
   tournamentId,
   nextRoundNumber,
@@ -38,61 +51,73 @@ export function AddRoundDialog({
   className,
 }: AddRoundDialogProps) {
   const [open, setOpen] = useState(false)
-  const [rounds, setRounds] = useState<RoundEntry[]>([
-    { pokemon1: null, pokemon2: null, result: null, wentFirst: null }
+  const [pokemon1, setPokemon1] = useState<number | null>(null)
+  const [pokemon2, setPokemon2] = useState<number | null>(null)
+  const [isByeOrNoShow, setIsByeOrNoShow] = useState(false)
+  const [byeNoShowType, setByeNoShowType] = useState<RoundResult | null>(null)
+  const [games, setGames] = useState<GameEntry[]>([
+    { result: null, wentFirst: null },
+    { result: null, wentFirst: null },
+    { result: null, wentFirst: null }
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function updateRound(index: number, updates: Partial<RoundEntry>) {
-    setRounds((prev) => {
+  function updateGame(index: number, updates: Partial<GameEntry>) {
+    setGames((prev) => {
       const next = [...prev]
       next[index] = { ...next[index], ...updates }
       return next
     })
   }
 
-  function addRoundEntry() {
-    if (rounds.length < 3) {
-      setRounds((prev) => [
-        ...prev,
-        { pokemon1: null, pokemon2: null, result: null, wentFirst: null }
-      ])
-    }
-  }
-
-  function canAddRound(index: number): boolean {
-    return (
-      rounds[index].result !== null &&
-      rounds[index].pokemon1 !== null &&
-      rounds[index].pokemon2 !== null &&
-      rounds.length < 3
-    )
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    const completeRounds = rounds.filter(
-      (r) => r.pokemon1 !== null && r.pokemon2 !== null && r.result !== null
-    )
+    if (isByeOrNoShow && byeNoShowType) {
+      setIsSubmitting(true)
+      try {
+        await addRound({
+          tournament_id: tournamentId,
+          round_number: nextRoundNumber,
+          opponent_pokemon_1: 0,
+          opponent_pokemon_2: 0,
+          games: [{ result: byeNoShowType, went_first: null }],
+        })
 
-    if (completeRounds.length === 0) return
+        resetForm()
+        setOpen(false)
+        onRoundAdded?.()
+      } finally {
+        setIsSubmitting(false)
+      }
+      return
+    }
+
+    if (pokemon1 === null || pokemon2 === null) return
+
+    const roundResult = calculateRoundResult(games)
+    if (!roundResult) return
+
+    const completeGames: { result: GameResult | RoundResult; went_first: boolean }[] = games
+      .filter((g) => g.result !== null)
+      .map((g) => ({
+        result: g.result as GameResult,
+        went_first: g.wentFirst ?? false
+      }))
+
+    if (completeGames.length === 0) return
 
     setIsSubmitting(true)
     try {
-      for (let i = 0; i < completeRounds.length; i++) {
-        const round = completeRounds[i]
-        await addRound({
-          tournament_id: tournamentId,
-          round_number: nextRoundNumber + i,
-          opponent_pokemon_1: round.pokemon1!,
-          opponent_pokemon_2: round.pokemon2!,
-          result: round.result!,
-          went_first: round.wentFirst,
-        })
-      }
+      await addRound({
+        tournament_id: tournamentId,
+        round_number: nextRoundNumber,
+        opponent_pokemon_1: pokemon1,
+        opponent_pokemon_2: pokemon2,
+        games: completeGames,
+      })
 
-      setRounds([{ pokemon1: null, pokemon2: null, result: null, wentFirst: null }])
+      resetForm()
       setOpen(false)
       onRoundAdded?.()
     } finally {
@@ -100,134 +125,196 @@ export function AddRoundDialog({
     }
   }
 
+  function resetForm() {
+    setPokemon1(null)
+    setPokemon2(null)
+    setIsByeOrNoShow(false)
+    setByeNoShowType(null)
+    setGames([
+      { result: null, wentFirst: null },
+      { result: null, wentFirst: null },
+      { result: null, wentFirst: null }
+    ])
+  }
+
   function handleOpenChange(newOpen: boolean) {
     if (!newOpen) {
-      setRounds([{ pokemon1: null, pokemon2: null, result: null, wentFirst: null }])
+      resetForm()
     }
     setOpen(newOpen)
   }
 
-  const resultOptions: { value: RoundEntry['result']; label: string }[] = [
+  const gameResultOptions: { value: GameResult; label: string }[] = [
     { value: 'win', label: 'W' },
     { value: 'loss', label: 'L' },
     { value: 'tie', label: 'T' },
-    { value: 'bye', label: 'Bye' },
-    { value: 'no_show', label: 'NS' },
   ]
+
+  const isValid = isByeOrNoShow
+    ? byeNoShowType !== null
+    : pokemon1 !== null && pokemon2 !== null && games[0].result !== null
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className={cn("", className)}>
-          <Plus className="mr-2 h-4 w-4" />
           Add Round
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
+    <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add Round {nextRoundNumber}</DialogTitle>
             <DialogDescription>
-              Log your match result. Add more rounds if needed.
+              Log your match result.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {rounds.map((round, index) => (
-              <div key={index} className="grid gap-3 p-4 border rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm">Round {nextRoundNumber + index}</span>
-                </div>
+            <div className="grid gap-2">
+              <Label>Match Type</Label>
+              <div className="flex flex-row gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "min-w-[4rem]",
+                    !isByeOrNoShow && "bg-primary/20"
+                  )}
+                  onClick={() => {
+                    setIsByeOrNoShow(false)
+                    setByeNoShowType(null)
+                  }}
+                >
+                  Regular
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "min-w-[4rem]",
+                    isByeOrNoShow && byeNoShowType === 'bye' && "bg-primary/20"
+                  )}
+                  onClick={() => {
+                    setIsByeOrNoShow(true)
+                    setByeNoShowType('bye')
+                  }}
+                >
+                  Bye
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "min-w-[4rem]",
+                    isByeOrNoShow && byeNoShowType === 'no_show' && "bg-primary/20"
+                  )}
+                  onClick={() => {
+                    setIsByeOrNoShow(true)
+                    setByeNoShowType('no_show')
+                  }}
+                >
+                  No Show
+                </Button>
+              </div>
+            </div>
 
+            {!isByeOrNoShow && (
+              <>
                 <div className="grid gap-2">
                   <Label>Opponent's Pokemon *</Label>
                   <div className="flex flex-row gap-4">
                     <div className="flex-1">
                       <PokemonCombobox
-                        value={round.pokemon1}
-                        onChange={(id) => updateRound(index, { pokemon1: id })}
+                        value={pokemon1}
+                        onChange={setPokemon1}
                       />
                     </div>
                     <div className="flex-1">
                       <PokemonCombobox
-                        value={round.pokemon2}
-                        onChange={(id) => updateRound(index, { pokemon2: id })}
+                        value={pokemon2}
+                        onChange={setPokemon2}
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="grid gap-2">
-                  <Label>Result *</Label>
-                  <div className="flex flex-row gap-2 flex-wrap">
-                    {resultOptions.map((option) => (
-                      <Button
-                        key={option.value}
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "min-w-[3rem]",
-                          round.result === option.value && "bg-primary/20"
-                        )}
-                        onClick={() => {
-                          updateRound(index, { result: option.value })
-                          if (option.value === 'bye' || option.value === 'no_show') {
-                            updateRound(index, { wentFirst: null })
-                          }
-                        }}
-                      >
-                        {option.label}
-                      </Button>
-                    ))}
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-medium text-sm">Games</span>
+                    {games[0].result && (
+                      <span className="text-xs text-muted-foreground">
+                        Round: {calculateRoundResult(games)?.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-row gap-4">
+                    {games.map((game, index) => {
+                      const isVisible = index === 0 || (index > 0 && games[index - 1].result !== null)
+                      if (!isVisible) return null
+
+                      return (
+                        <div key={index} className="flex flex-col items-start gap-2">
+                          <span className="text-sm font-medium text-muted-foreground">Game {index + 1}</span>
+
+                          <div className="flex items-center gap-1">
+                            {gameResultOptions.map((option) => (
+                              <Button
+                                key={option.value}
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  "w-10 h-8",
+                                  game.result === option.value && "bg-primary/20"
+                                )}
+                                onClick={() => updateGame(index, { result: game.result === option.value ? null : option.value })}
+                              >
+                                {option.label}
+                              </Button>
+                            ))}
+                          </div>
+
+                          {game.result !== null ? (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  "w-10 h-8",
+                                  game.wentFirst === true && "bg-primary/20"
+                                )}
+                                onClick={() => updateGame(index, { wentFirst: game.wentFirst === true ? null : true })}
+                              >
+                                1st
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  "w-10 h-8",
+                                  game.wentFirst === false && "bg-primary/20"
+                                )}
+                                onClick={() => updateGame(index, { wentFirst: game.wentFirst === false ? null : false })}
+                              >
+                                2nd
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="w-[72px]" />
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
-
-                {round.result !== null && round.result !== 'bye' && round.result !== 'no_show' && (
-                  <div className="grid gap-2">
-                    <Label>You went *</Label>
-                    <div className="flex flex-row gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "min-w-[4rem]",
-                          round.wentFirst === true && "bg-primary/20"
-                        )}
-                        onClick={() => updateRound(index, { wentFirst: true })}
-                      >
-                        First
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "min-w-[4rem]",
-                          round.wentFirst === false && "bg-primary/20"
-                        )}
-                        onClick={() => updateRound(index, { wentFirst: false })}
-                      >
-                        Second
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {index === rounds.length - 1 && canAddRound(index) && rounds.length < 3 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addRoundEntry}
-                    className="mt-2"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Round {nextRoundNumber + index + 1}
-                  </Button>
-                )}
-              </div>
-            ))}
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
@@ -235,13 +322,7 @@ export function AddRoundDialog({
             </Button>
             <Button
               type="submit"
-              disabled={
-                rounds[0].pokemon1 === null ||
-                rounds[0].pokemon2 === null ||
-                rounds[0].result === null ||
-                (rounds[0].result !== 'bye' && rounds[0].result !== 'no_show' && rounds[0].wentFirst === null) ||
-                isSubmitting
-              }
+              disabled={!isValid || isSubmitting}
             >
               {isSubmitting ? "Saving..." : "Save"}
             </Button>

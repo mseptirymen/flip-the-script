@@ -7,13 +7,17 @@ export interface Tournament {
   created_at: string;
 }
 
+export interface Game {
+  result: 'win' | 'loss' | 'tie' | 'bye' | 'no_show';
+  went_first: boolean | null;
+}
+
 export interface Round {
   id: string;
   tournament_id: string;
   round_number: number;
   opponent_pokemon_1: number;
   opponent_pokemon_2: number;
-  result: 'win' | 'loss' | 'tie' | 'bye' | 'no_show';
-  went_first: boolean | null;
+  games: Game[];
   created_at: string;
 }

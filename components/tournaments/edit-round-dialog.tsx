@@ -14,16 +14,56 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { deleteRound, updateRound } from "@/lib/db"
-import type { Round } from "@/lib/types"
+import type { Game } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+type GameResult = 'win' | 'loss' | 'tie'
+type ByeNoShowResult = 'bye' | 'no_show'
 
 interface EditRoundDialogProps {
   round: Round
   onRoundUpdated?: () => void
   children: React.ReactNode
   className?: string
+}
+
+interface Round {
+  id: string
+  tournament_id: string
+  round_number: number
+  opponent_pokemon_1: number
+  opponent_pokemon_2: number
+  games: Game[]
+  created_at: string
+}
+
+interface GameEntry {
+  result: GameResult | null
+  went_first: boolean | null
+}
+
+function calculateRoundResult(games: GameEntry[]): GameResult | null {
+  if (games.length === 0) return null
+
+  const wins = games.filter((g) => g.result === 'win').length
+  const losses = games.filter((g) => g.result === 'loss').length
+
+  if (wins > losses) return 'win'
+  if (losses > wins) return 'loss'
+  if (wins === losses && wins > 0) return 'tie'
+  return null
+}
+
+function isByeNoShowRound(games: Game[]): boolean {
+  return games.length === 1 && (games[0].result === 'bye' || games[0].result === 'no_show')
+}
+
+function getByeNoShowType(games: Game[]): ByeNoShowResult | null {
+  if (games.length === 1 && (games[0].result === 'bye' || games[0].result === 'no_show')) {
+    return games[0].result as ByeNoShowResult
+  }
+  return null
 }
 
 export function EditRoundDialog({
@@ -35,22 +75,57 @@ export function EditRoundDialog({
   const [open, setOpen] = useState(false)
   const [pokemon1, setPokemon1] = useState<number | null>(round.opponent_pokemon_1)
   const [pokemon2, setPokemon2] = useState<number | null>(round.opponent_pokemon_2)
-  const [result, setResult] = useState<"win" | "loss" | "tie" | "bye" | "no_show">(round.result)
-  const [wentFirst, setWentFirst] = useState<boolean | null>(round.went_first)
+  const [isByeOrNoShow, setIsByeOrNoShow] = useState(() => isByeNoShowRound(round.games || []))
+  const [byeNoShowType, setByeNoShowType] = useState<ByeNoShowResult | null>(() => getByeNoShowType(round.games || []))
+  const [games, setGames] = useState<GameEntry[]>(() => {
+    const existing: GameEntry[] = (round.games || []).map(g => ({
+      result: g.result as GameResult | null,
+      went_first: g.went_first
+    }))
+    while (existing.length < 3) {
+      existing.push({ result: null, went_first: null })
+    }
+    return existing
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if (isByeOrNoShow && byeNoShowType) {
+      setIsSubmitting(true)
+      try {
+        await updateRound(round.id, {
+          opponent_pokemon_1: 0,
+          opponent_pokemon_2: 0,
+          games: [{ result: byeNoShowType, went_first: null }],
+        })
+
+        setOpen(false)
+        setShowDeleteConfirm(false)
+        onRoundUpdated?.()
+      } finally {
+        setIsSubmitting(false)
+      }
+      return
+    }
+
     if (pokemon1 === null || pokemon2 === null) return
+
+    const gamesToSave = games
+      .filter((g) => g.result !== null)
+      .map((g) => ({
+        result: g.result as GameResult,
+        went_first: g.went_first ?? false
+      }))
 
     setIsSubmitting(true)
     try {
       await updateRound(round.id, {
         opponent_pokemon_1: pokemon1,
         opponent_pokemon_2: pokemon2,
-        result,
-        went_first: wentFirst,
+        games: gamesToSave,
       })
 
       setOpen(false)
@@ -77,19 +152,41 @@ export function EditRoundDialog({
     if (newOpen) {
       setPokemon1(round.opponent_pokemon_1)
       setPokemon2(round.opponent_pokemon_2)
-      setResult(round.result)
-      setWentFirst(round.went_first)
+      setIsByeOrNoShow(isByeNoShowRound(round.games || []))
+      setByeNoShowType(getByeNoShowType(round.games || []))
+      const existing: GameEntry[] = (round.games || []).map(g => ({
+        result: g.result as GameResult | null,
+        went_first: g.went_first
+      }))
+      while (existing.length < 3) {
+        existing.push({ result: null, went_first: null })
+      }
+      setGames(existing)
       setShowDeleteConfirm(false)
     }
     setOpen(newOpen)
   }
+
+  function updateGame(index: number, updates: Partial<GameEntry>) {
+    setGames((prev) => {
+      const next = [...prev]
+      next[index] = { ...next[index], ...updates }
+      return next
+    })
+  }
+
+  const gameResultOptions: { value: GameResult; label: string }[] = [
+    { value: 'win', label: 'W' },
+    { value: 'loss', label: 'L' },
+    { value: 'tie', label: 'T' },
+  ]
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild className={cn("", className)}>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[700px]">
         {showDeleteConfirm ? (
           <>
             <DialogHeader>
@@ -126,70 +223,150 @@ export function EditRoundDialog({
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Opponent's Pokemon *</Label>
-                <div className="flex flex-row gap-4">
-                  <div className="flex-1">
-                    <PokemonCombobox
-                      value={pokemon1}
-                      onChange={setPokemon1}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <PokemonCombobox
-                      value={pokemon2}
-                      onChange={setPokemon2}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label>Result *</Label>
-                <RadioGroup
-                  value={result}
-                  onValueChange={(value) => setResult(value as "win" | "loss" | "tie" | "bye" | "no_show")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="win" id="win" />
-                    <Label htmlFor="win">Win</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="loss" id="loss" />
-                    <Label htmlFor="loss">Loss</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="tie" id="tie" />
-                    <Label htmlFor="tie">Tie</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="bye" id="bye" />
-                    <Label htmlFor="bye">Bye</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no_show" id="no_show" />
-                    <Label htmlFor="no_show">No Show</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              {result === "win" || result === "loss" || result === "tie" ? (
-                <div className="grid gap-2">
-                  <Label>You went *</Label>
-                  <RadioGroup
-                    value={wentFirst === true ? "first" : wentFirst === false ? "second" : ""}
-                    onValueChange={(value) => setWentFirst(value === "first")}
-                    className="flex gap-4"
+                <Label>Match Type</Label>
+                <div className="flex flex-row gap-2 flex-wrap">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "min-w-[4rem]",
+                      !isByeOrNoShow && "bg-primary/20"
+                    )}
+                    onClick={() => {
+                      setIsByeOrNoShow(false)
+                      setByeNoShowType(null)
+                    }}
                   >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="first" id="first" />
-                      <Label htmlFor="first">First</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="second" id="second" />
-                      <Label htmlFor="second">Second</Label>
-                    </div>
-                  </RadioGroup>
+                    Regular
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "min-w-[4rem]",
+                      isByeOrNoShow && byeNoShowType === 'bye' && "bg-primary/20"
+                    )}
+                    onClick={() => {
+                      setIsByeOrNoShow(true)
+                      setByeNoShowType('bye')
+                    }}
+                  >
+                    Bye
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "min-w-[4rem]",
+                      isByeOrNoShow && byeNoShowType === 'no_show' && "bg-primary/20"
+                    )}
+                    onClick={() => {
+                      setIsByeOrNoShow(true)
+                      setByeNoShowType('no_show')
+                    }}
+                  >
+                    No Show
+                  </Button>
                 </div>
-              ) : null}
+              </div>
+
+              {!isByeOrNoShow && (
+                <>
+                  <div className="grid gap-2">
+                    <Label>Opponent's Pokemon *</Label>
+                    <div className="flex flex-row gap-4">
+                      <div className="flex-1">
+                        <PokemonCombobox
+                          value={pokemon1}
+                          onChange={setPokemon1}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <PokemonCombobox
+                          value={pokemon2}
+                          onChange={setPokemon2}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-sm">Games</span>
+                      {games[0].result && (
+                        <span className="text-xs text-muted-foreground">
+                          Round: {calculateRoundResult(games)?.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-row gap-4">
+                      {games.map((game, index) => {
+                        const isVisible = index === 0 || (index > 0 && games[index - 1].result !== null)
+                        if (!isVisible) return null
+
+                        return (
+                          <div key={index} className="flex flex-col items-start gap-2">
+                            <span className="text-sm font-medium text-muted-foreground">Game {index + 1}</span>
+
+                            <div className="flex flex-row gap-1">
+                              {gameResultOptions.map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className={cn(
+                                    "w-10 h-8",
+                                    game.result === option.value && "bg-primary/20"
+                                  )}
+                                  onClick={() => updateGame(index, { result: game.result === option.value ? null : option.value })}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </div>
+
+                            {game.result !== null ? (
+                              <div className="flex flex-row gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className={cn(
+                                    "w-10 h-8",
+                                    game.went_first === true && "bg-primary/20"
+                                  )}
+                                  onClick={() => updateGame(index, { went_first: game.went_first === true ? null : true })}
+                                >
+                                  1st
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className={cn(
+                                    "w-10 h-8",
+                                    game.went_first === false && "bg-primary/20"
+                                  )}
+                                  onClick={() => updateGame(index, { went_first: game.went_first === false ? null : false })}
+                                >
+                                  2nd
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="w-[72px]" />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <DialogFooter className="gap-2 sm:gap-0">
               <Button
@@ -205,7 +382,7 @@ export function EditRoundDialog({
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={pokemon1 === null || pokemon2 === null || isSubmitting}>
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
