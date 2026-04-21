@@ -186,7 +186,7 @@ export function EditRoundDialog({
       <DialogTrigger asChild className={cn("", className)}>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-lg">
         {showDeleteConfirm ? (
           <>
             <DialogHeader>
@@ -368,11 +368,10 @@ export function EditRoundDialog({
                 </>
               )}
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="gap-1">
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
                 onClick={() => setShowDeleteConfirm(true)}
                 className="mr-auto text-destructive hover:text-destructive"
               >
