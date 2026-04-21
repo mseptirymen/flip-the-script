@@ -80,9 +80,10 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                 <Card
                   className={cn(
                     "p-4 cursor-pointer transition-colors border-0 shadow-none ring-0",
-                    round.result === "win"
-                      ? "bg-emerald-500/10 hover:bg-emerald-500/20"
-                      : "bg-red-500/10 hover:bg-red-500/20"
+                    round.result === "win" && "bg-emerald-500/10 hover:bg-emerald-500/20",
+                    round.result === "loss" && "bg-red-500/10 hover:bg-red-500/20",
+                    round.result === "tie" && "bg-yellow-500/10 hover:bg-yellow-500/20",
+                    (round.result === "bye" || round.result === "no_show") && "bg-muted hover:bg-muted/80"
                   )}
                 >
                   <CardContent className="p-0">
@@ -109,10 +110,18 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                         />
                       </div>
                       <Badge
-                        variant={round.result === "win" ? "success" : "destructive"}
+                        variant={
+                          round.result === "win" ? "success" :
+                          round.result === "loss" ? "destructive" :
+                          round.result === "tie" ? "secondary" :
+                          "outline"
+                        }
                         className="h-7 px-3 text-sm font-semibold min-w-[2.5rem] text-center"
                       >
-                        {round.result === "win" ? "W" : "L"}
+                        {round.result === "win" ? "W" :
+                         round.result === "loss" ? "L" :
+                         round.result === "tie" ? "T" :
+                         round.result === "bye" ? "B" : "N"}
                       </Badge>
                     </div>
                   </CardContent>
