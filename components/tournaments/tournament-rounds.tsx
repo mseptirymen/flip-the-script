@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Empty, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
 import { AddRoundDialog } from "@/components/tournaments/add-round-dialog"
 import { EditRoundDialog } from "@/components/tournaments/edit-round-dialog"
 import { getRoundsForTournament, getTournament } from "@/lib/db"
@@ -83,15 +84,14 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
       </div>
 
       {rounds.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-sm text-muted-foreground">
-                No rounds recorded yet. Click "Add Round" to log your first round.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <Empty className="border">
+          <EmptyMedia variant="icon">
+            <Trophy className="size-6" />
+          </EmptyMedia>
+          <EmptyDescription>
+            No rounds recorded yet. Click "Add Round" to log your first round.
+          </EmptyDescription>
+        </Empty>
       ) : (
         <div className="grid gap-2">
           {rounds
