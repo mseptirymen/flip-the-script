@@ -19,6 +19,33 @@ interface TCGSet {
   abbreviation?: string
 }
 
+interface CacheEntry {
+  products: TCGProduct[]
+  timestamp: number
+}
+
+const setCache = new Map<string, CacheEntry>()
+const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+
+function isCacheValid(entry: CacheEntry): boolean {
+  return Date.now() - entry.timestamp < CACHE_TTL
+}
+
+async function fetchSetWithCache(setId: string): Promise<TCGProduct[]> {
+  const cached = setCache.get(setId)
+  if (cached && isCacheValid(cached)) {
+    return cached.products
+  }
+
+  const res = await fetch(`https://tcgtracking.com/tcgapi/v1/3/sets/${setId}`)
+  const data = await res.json()
+  const products: TCGProduct[] = data.products || []
+  const cards = products.filter(isCardProduct)
+
+  setCache.set(setId, { products: cards, timestamp: Date.now() })
+  return cards
+}
+
 function isCardProduct(product: TCGProduct): boolean {
   return Boolean(product.number)
 }
@@ -46,16 +73,18 @@ export async function GET(request: Request) {
 
     const allProducts: TCGProduct[] = []
 
-    for (const set of pokemonSets) {
-      try {
-        const res = await fetch(`https://tcgtracking.com/tcgapi/v1/3/sets/${set.id}`)
-        const data = await res.json()
-        const products: TCGProduct[] = data.products || []
-        const cards = products.filter(isCardProduct)
-        allProducts.push(...cards)
-      } catch {
-        continue
-      }
+    const results = await Promise.all(
+      pokemonSets.map(async (set) => {
+        try {
+          return await fetchSetWithCache(String(set.id))
+        } catch {
+          return []
+        }
+      })
+    )
+
+    for (const cards of results) {
+      allProducts.push(...cards)
     }
 
     const query = q.toLowerCase()
@@ -67,7 +96,7 @@ export async function GET(request: Request) {
         p.number?.toLowerCase().includes(query)
     )
 
-    const results = filtered.slice(0, 20).map((p) => ({
+    const mapped = filtered.slice(0, 20).map((p) => ({
       product_id: p.id,
       name: p.name,
       number: p.number,
@@ -75,9 +104,30 @@ export async function GET(request: Request) {
       rarity: p.rarity,
     }))
 
-    return NextResponse.json(results)
+    return NextResponse.json(mapped)
   } catch (error) {
     console.error("TCG Tracking API error:", error)
     return NextResponse.json({ error: "Failed to fetch cards" }, { status: 500 })
+  }
+}
+
+export async function POST() {
+  try {
+    const setsRes = await fetch("https://tcgtracking.com/tcgapi/v1/3/sets")
+    const setsData = await setsRes.json()
+    const sets: TCGSet[] = setsData.sets || []
+
+    const pokemonSets = sets.filter((s) => {
+      const name = s.name.toLowerCase()
+      const excludeTerms = ["magic", "yu-gi-oh", "mtg", "yugioh", "force", "weiss", "digimon", "onepiece", "dragonball", "world championship", "prize", "jumbo"]
+      return !excludeTerms.some((term) => name.includes(term))
+    })
+
+    await Promise.all(pokemonSets.map((set) => fetchSetWithCache(String(set.id))))
+
+    return NextResponse.json({ cached: setCache.size })
+  } catch (error) {
+    console.error("Cache warm error:", error)
+    return NextResponse.json({ error: "Failed to warm cache" }, { status: 500 })
   }
 }
