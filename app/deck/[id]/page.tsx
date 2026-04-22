@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PokemonSpriteSelect } from "@/components/tournaments/pokemon-sprite-select"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -47,9 +46,6 @@ export default function DeckDetailPage() {
   const deckId = params.id as string
 
   const [deck, setDeck] = useState<Deck | null>(null)
-  const [deckName, setDeckName] = useState("")
-  const [spriteId1, setSpriteId1] = useState<number | null>(null)
-  const [spriteId2, setSpriteId2] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deckCards, setDeckCards] = useState<DeckCard[]>([])
@@ -69,9 +65,6 @@ export default function DeckDetailPage() {
       const data = await getDeck(deckId)
       if (data) {
         setDeck(data)
-        setDeckName(data.name)
-        setSpriteId1(data.sprite_id_1)
-        setSpriteId2(data.sprite_id_2)
       }
     } catch (error) {
       console.error("Failed to load deck:", error)
@@ -90,14 +83,9 @@ export default function DeckDetailPage() {
   }
 
   async function handleSave() {
-    if (!deckName.trim()) return
     setSaving(true)
     try {
-      await updateDeck(deckId, {
-        name: deckName.trim(),
-        sprite_id_1: spriteId1 ?? deck?.sprite_id_1 ?? 6,
-        sprite_id_2: spriteId2 ?? deck?.sprite_id_2 ?? 9,
-      })
+      await updateDeck(deckId, {})
       router.push("/deck")
     } catch (error) {
       console.error("Failed to update deck:", error)
@@ -206,31 +194,7 @@ export default function DeckDetailPage() {
           ) : (
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="w-full lg:w-[60%] flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <div className="grid gap-2 flex-1">
-                    <Label htmlFor="deck-name">Deck Name</Label>
-                    <Input
-                      id="deck-name"
-                      value={deckName}
-                      onChange={(e) => setDeckName(e.target.value)}
-                      placeholder="My Awesome Deck"
-                    />
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <PokemonSpriteSelect
-                      value={spriteId1}
-                      onChange={setSpriteId1}
-                      placeholder="Select first Pokemon"
-                      className="w-32"
-                    />
-                    <PokemonSpriteSelect
-                      value={spriteId2}
-                      onChange={setSpriteId2}
-                      placeholder="Select second Pokemon"
-                      className="w-32"
-                    />
-                  </div>
-                </div>
+                <h1>{deck?.name}</h1>
 
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Deck Cards</h2>
@@ -327,7 +291,7 @@ export default function DeckDetailPage() {
                   </Button>
                   <Button
                     onClick={handleSave}
-                    disabled={!deckName.trim() || saving}
+                    disabled={saving}
                   >
                     {saving ? "Saving..." : "Save Changes"}
                   </Button>
