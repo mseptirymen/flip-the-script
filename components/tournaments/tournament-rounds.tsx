@@ -116,7 +116,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                       <span className="text-sm font-medium">
                         Round {round.round_number}
                       </span>
-                      <div className="flex items-center gap-0">
+                      <div className="flex items-center gap-0 ml-20 mr-auto">
                         <img
                           src={`/icons/${round.opponent_pokemon_1}.png`}
                           alt=""
@@ -134,7 +134,7 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
                           }}
                         />
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 w-full max-w-[6rem] justify-end">
                         {(round.games || []).map((game, index) => {
                           const badge = getResultBadge(game.result)
                           return (
