@@ -195,7 +195,7 @@ export function EditRoundDialog({
                 This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-1 mt-4">
               <Button
                 type="button"
                 variant="outline"
