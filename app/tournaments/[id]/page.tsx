@@ -55,7 +55,7 @@ export default function TournamentDetailPage({ params }: TournamentDetailPagePro
               />
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mx-auto w-full max-w-3xl">
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mx-auto w-full max-w-xl">
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-4 w-32" />
             <div className="flex flex-col gap-2 mt-4">
@@ -97,7 +97,7 @@ export default function TournamentDetailPage({ params }: TournamentDetailPagePro
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-          <div className="mx-auto w-full max-w-3xl">
+          <div className="mx-auto w-full max-w-xl">
             <div>
               <h1 className="text-2xl font-bold">{tournament.name}</h1>
               {tournament.date && (

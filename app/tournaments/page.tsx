@@ -77,7 +77,7 @@ export default function TournamentsPage() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mx-auto w-full max-w-3xl">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mx-auto w-full max-w-xl">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-medium">My Tournaments</h1>
             <AddTournamentDialog onTournamentAdded={loadTournaments} />
