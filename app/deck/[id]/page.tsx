@@ -192,9 +192,10 @@ export default function DeckDetailPage() {
               <p className="text-muted-foreground">Loading...</p>
             </div>
           ) : (
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="w-full lg:w-[60%] flex flex-col gap-4">
-                <h1>{deck?.name}</h1>
+            <>
+              <h1>{deck?.name}</h1>
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="w-full lg:w-[60%] flex flex-col gap-4">
 
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Deck Cards</h2>
@@ -361,7 +362,7 @@ export default function DeckDetailPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </SidebarInset>
