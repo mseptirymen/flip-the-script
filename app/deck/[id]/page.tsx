@@ -51,8 +51,6 @@ export default function DeckDetailPage() {
   const [deckCards, setDeckCards] = useState<DeckCard[]>([])
   const [searchResults, setSearchResults] = useState<CardSearchResult[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [setQuery, setSetQuery] = useState("")
-  const [numberQuery, setNumberQuery] = useState("")
   const [searching, setSearching] = useState(false)
 
   useEffect(() => {
@@ -98,9 +96,7 @@ export default function DeckDetailPage() {
     setSearching(true)
     try {
       const params = new URLSearchParams()
-      if (searchQuery) params.set("name", searchQuery)
-      if (setQuery) params.set("set", setQuery)
-      if (numberQuery) params.set("number", numberQuery)
+      if (searchQuery) params.set("q", searchQuery)
 
       const res = await fetch(`/api/cards?${params}`)
       const data = await res.json()
@@ -121,7 +117,7 @@ export default function DeckDetailPage() {
         product_id: card.product_id,
         name: card.name,
         set_name: "",
-        set_abbreviation: setQuery || "",
+        set_abbreviation: "",
         collector_number: card.number,
         rarity: card.rarity,
         image_url: card.image_url,
@@ -300,35 +296,14 @@ export default function DeckDetailPage() {
                 <Card className="p-4 flex flex-col gap-4">
                   <h2 className="text-lg font-semibold">Search Cards</h2>
                   <div className="grid gap-2">
-                    <Label htmlFor="search-name">Name</Label>
+                    <Label htmlFor="search">Search by name, set, or number</Label>
                     <Input
-                      id="search-name"
+                      id="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Card name..."
+                      placeholder="Charizard, SWSH, 123..."
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="grid gap-2">
-                      <Label htmlFor="search-set">Set</Label>
-                      <Input
-                        id="search-set"
-                        value={setQuery}
-                        onChange={(e) => setSetQuery(e.target.value)}
-                        placeholder="Set ID..."
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="search-number">Number</Label>
-                      <Input
-                        id="search-number"
-                        value={numberQuery}
-                        onChange={(e) => setNumberQuery(e.target.value)}
-                        placeholder="Card #..."
-                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                      />
-                    </div>
                   </div>
                   <Button onClick={handleSearch} disabled={searching}>
                     {searching ? "Searching..." : "Search"}

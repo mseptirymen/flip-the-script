@@ -1,35 +1,46 @@
 import { NextResponse } from "next/server"
 
+interface TCGProduct {
+  id: number
+  name: string
+  number: string
+  image_url: string
+  rarity: string
+  set_abbreviation?: string
+  set_name?: string
+  cardtrader?: {
+    product_type?: string
+  }
+}
+
+function isCardProduct(product: TCGProduct): boolean {
+  return Boolean(product.number)
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const setId = searchParams.get("set") || "24380"
-  const name = searchParams.get("name") || ""
-  const number = searchParams.get("number") || ""
+  const q = searchParams.get("q") || ""
 
   try {
     const res = await fetch(`https://tcgtracking.com/tcgapi/v1/3/sets/${setId}`)
     const data = await res.json()
-    let products = data.products || []
+    let products: TCGProduct[] = data.products || []
 
-    if (name) {
-      products = products.filter((p: { name?: string }) =>
-        p.name?.toLowerCase().includes(name.toLowerCase())
+    products = products.filter(isCardProduct)
+
+    if (q) {
+      const query = q.toLowerCase()
+      products = products.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(query) ||
+          p.set_abbreviation?.toLowerCase().includes(query) ||
+          p.set_name?.toLowerCase().includes(query) ||
+          p.number?.toLowerCase().includes(query)
       )
     }
 
-    if (number) {
-      products = products.filter((p: { number?: string }) =>
-        p.number?.toLowerCase().includes(number.toLowerCase())
-      )
-    }
-
-    const results = products.slice(0, 20).map((p: {
-      id: number
-      name: string
-      number: string
-      image_url: string
-      rarity: string
-    }) => ({
+    const results = products.slice(0, 20).map((p) => ({
       product_id: p.id,
       name: p.name,
       number: p.number,
