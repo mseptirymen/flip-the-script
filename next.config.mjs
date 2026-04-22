@@ -1,4 +1,11 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "tcgplayer-cdn.tcgplayer.com" },
+      { protocol: "https", hostname: "cardtrader.com" },
+    ],
+  },
+};
 
 export default nextConfig;

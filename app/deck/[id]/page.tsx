@@ -18,10 +18,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { SearchCardItem, DeckCardItem, type CardSearchResult } from "@/components/deck-card-item"
 import {
   getDeck,
   updateDeck,
@@ -31,14 +31,6 @@ import {
   Deck,
   DeckCard,
 } from "@/lib/db"
-
-interface CardSearchResult {
-  product_id: number
-  name: string
-  number: string
-  image_url: string
-  rarity: string
-}
 
 export default function DeckDetailPage() {
   const router = useRouter()
@@ -319,11 +311,13 @@ export default function DeckDetailPage() {
                 </div>
               </div>
 
-              <div className="w-full lg:w-[40%] flex flex-col gap-4">
+              <div className="w-full lg:w-[40%]">
                 <Card className="p-4 flex flex-col gap-4">
-                  <h2 className="text-lg font-semibold">Search Cards</h2>
-                  <div className="grid gap-2">
-                    <Label htmlFor="search">Search by name, set, or number</Label>
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-lg font-semibold">Search Cards</h2>
+                    <p className="text-sm text-muted-foreground">Search by name, set, or number</p>
+                  </div>
+                  <div className="flex gap-2">
                     <Input
                       id="search"
                       value={searchQuery}
@@ -331,24 +325,18 @@ export default function DeckDetailPage() {
                       placeholder="Charizard, SWSH, 123..."
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
+                    <Button onClick={handleSearch} disabled={searching}>
+                      {searching ? "Searching..." : "Search"}
+                    </Button>
                   </div>
-                  <Button onClick={handleSearch} disabled={searching}>
-                    {searching ? "Searching..." : "Search"}
-                  </Button>
-                </Card>
-
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Results
-                  </h3>
                   {searchResults.length === 0 ? (
-                    <Card className="flex items-center justify-center p-8 min-h-[150px]">
+                    <div className="flex items-center justify-center p-8 min-h-[150px]">
                       <p className="text-muted-foreground text-center text-sm">
                         Search for cards to add to your deck.
                       </p>
-                    </Card>
+                    </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
+                    <div className="grid grid-cols-3 gap-2 pb-8 overflow-y-auto min-h-[200px] align-items-start">
                       {searchResults.map((card) => (
                         <SearchCardItem
                           key={card.product_id}
@@ -359,85 +347,12 @@ export default function DeckDetailPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </Card>
               </div>
             </div>
           )}
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
-}
-
-interface DeckCardItemProps {
-  card: DeckCard
-  onRemove: (id: string) => void
-}
-
-function DeckCardItem({ card, onRemove }: DeckCardItemProps) {
-  return (
-    <Card
-      className="relative group cursor-pointer overflow-hidden"
-      onClick={() => onRemove(card.id)}
-    >
-      {card.image_url && (
-        <img
-          src={card.image_url}
-          alt={card.name}
-          className="w-full aspect-[5/7] object-cover"
-        />
-      )}
-      <div className="absolute top-1 right-1">
-        {card.quantity > 1 && (
-          <Badge className="bg-primary text-primary-foreground">
-            {card.quantity}
-          </Badge>
-        )}
-      </div>
-      <div className="p-2">
-        <p className="text-xs font-medium truncate">{card.name}</p>
-        <p className="text-[10px] text-muted-foreground truncate">
-          {card.set_abbreviation} #{card.collector_number}
-        </p>
-      </div>
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        <p className="text-xs text-white">Click to remove</p>
-      </div>
-    </Card>
-  )
-}
-
-interface SearchCardItemProps {
-  card: CardSearchResult
-  onAdd: (card: CardSearchResult) => void
-  disabled?: boolean
-}
-
-function SearchCardItem({ card, onAdd, disabled }: SearchCardItemProps) {
-  return (
-    <Card
-      className={cn(
-        "relative group cursor-pointer overflow-hidden",
-        disabled && "opacity-50 pointer-events-none"
-      )}
-      onClick={() => onAdd(card)}
-    >
-      {card.image_url && (
-        <img
-          src={card.image_url}
-          alt={card.name}
-          className="w-full aspect-[5/7] object-cover"
-        />
-      )}
-      <div className="p-2">
-        <p className="text-xs font-medium truncate">{card.name}</p>
-        <p className="text-[10px] text-muted-foreground truncate">
-          #{card.number}
-        </p>
-      </div>
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        <p className="text-xs text-white">Click to add</p>
-      </div>
-    </Card>
   )
 }
