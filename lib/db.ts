@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
-import type { Round, Tournament, Deck } from './types';
+import type { Round, Tournament, Deck, DeckCard } from './types';
 
-export type { Round, Tournament, Deck };
+export type { Round, Tournament, Deck, DeckCard };
 
 export async function getAllTournaments(): Promise<Tournament[]> {
   const {
@@ -153,6 +153,47 @@ export async function updateDeck(
   const { error } = await supabase
     .from('decks')
     .update(updates)
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+export async function getDeckCards(deckId: string): Promise<DeckCard[]> {
+  const { data, error } = await supabase
+    .from('deck_cards')
+    .select('*')
+    .eq('deck_id', deckId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function addDeckCard(
+  card: Omit<DeckCard, 'id' | 'created_at'>
+): Promise<string> {
+  const { data, error } = await supabase
+    .from('deck_cards')
+    .insert(card)
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+export async function deleteDeckCard(id: string): Promise<void> {
+  const { error } = await supabase.from('deck_cards').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateDeckCardQuantity(
+  id: string,
+  quantity: number
+): Promise<void> {
+  const { error } = await supabase
+    .from('deck_cards')
+    .update({ quantity })
     .eq('id', id);
 
   if (error) throw error;

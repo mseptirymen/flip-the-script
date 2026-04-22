@@ -22,6 +22,24 @@ export interface Round {
   created_at: string;
 }
 
+export interface DeckCard {
+  id: string;
+  deck_id: string;
+  product_id: number;
+  name: string;
+  set_name: string;
+  set_abbreviation: string;
+  collector_number: string;
+  rarity: string | null;
+  image_url: string | null;
+  attack_name: string | null;
+  attack_damage: string | null;
+  hp: number | null;
+  pokemon_type: string | null;
+  quantity: number;
+  created_at: string;
+}
+
 export interface Deck {
   id: string;
   user_id: string;
