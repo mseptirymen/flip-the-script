@@ -13,34 +13,61 @@ interface TCGProduct {
   }
 }
 
+interface TCGSet {
+  id: number
+  name: string
+  abbreviation?: string
+}
+
 function isCardProduct(product: TCGProduct): boolean {
   return Boolean(product.number)
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const setId = searchParams.get("set") || "24380"
   const q = searchParams.get("q") || ""
 
+  if (!q) {
+    return NextResponse.json([])
+  }
+
   try {
-    const res = await fetch(`https://tcgtracking.com/tcgapi/v1/3/sets/${setId}`)
-    const data = await res.json()
-    let products: TCGProduct[] = data.products || []
+    const setsRes = await fetch("https://tcgtracking.com/tcgapi/v1/3/sets")
+    const setsData = await setsRes.json()
+    const sets: TCGSet[] = setsData.sets || []
 
-    products = products.filter(isCardProduct)
+    const pokemonSets = sets.filter((s) => {
+      const name = s.name.toLowerCase()
+      const abbr = s.abbreviation?.toLowerCase() || ""
+      const excludeTerms = ["magic", "yu-gi-oh", "mtg", "yugioh", "force", "weiss", "digimon", "onepiece", "dragonball", "world championship"]
+      const isExcluded = excludeTerms.some((term) => name.includes(term))
+      return !isExcluded
+    })
 
-    if (q) {
-      const query = q.toLowerCase()
-      products = products.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(query) ||
-          p.set_abbreviation?.toLowerCase().includes(query) ||
-          p.set_name?.toLowerCase().includes(query) ||
-          p.number?.toLowerCase().includes(query)
-      )
+    const allProducts: TCGProduct[] = []
+
+    for (const set of pokemonSets) {
+      try {
+        const res = await fetch(`https://tcgtracking.com/tcgapi/v1/3/sets/${set.id}`)
+        const data = await res.json()
+        const products: TCGProduct[] = data.products || []
+        const cards = products.filter(isCardProduct)
+        allProducts.push(...cards)
+      } catch {
+        continue
+      }
     }
 
-    const results = products.slice(0, 20).map((p) => ({
+    const query = q.toLowerCase()
+    const filtered = allProducts.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(query) ||
+        p.set_abbreviation?.toLowerCase().includes(query) ||
+        p.set_name?.toLowerCase().includes(query) ||
+        p.number?.toLowerCase().includes(query)
+    )
+
+    const results = filtered.slice(0, 20).map((p) => ({
       product_id: p.id,
       name: p.name,
       number: p.number,
