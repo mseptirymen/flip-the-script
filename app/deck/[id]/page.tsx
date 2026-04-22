@@ -336,15 +336,17 @@ export default function DeckDetailPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2 pb-8 overflow-y-auto min-h-[200px] align-items-start">
-                      {searchResults.map((card) => (
-                        <SearchCardItem
-                          key={card.product_id}
-                          card={card}
-                          onAdd={handleAddCard}
-                          disabled={deckCards.length >= 60}
-                        />
-                      ))}
+                    <div className="flex flex-col max-h-150 overflow-y-auto">
+                      <div className="grid grid-cols-3 gap-2 p-2">
+                        {searchResults.map((card) => (
+                          <SearchCardItem
+                            key={card.product_id}
+                            card={card}
+                            onAdd={handleAddCard}
+                            disabled={deckCards.length >= 60}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </Card>

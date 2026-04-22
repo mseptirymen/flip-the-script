@@ -23,7 +23,7 @@ export function SearchCardItem({ card, onAdd, disabled }: SearchCardItemProps) {
   return (
     <Card
       className={cn(
-        "relative group cursor-pointer overflow-hidden rounded-sm p-0 h-fit",
+        "relative group cursor-pointer overflow-hidden rounded-sm p-0 h-fit gap-0",
         disabled && "opacity-50 pointer-events-none"
       )}
       onClick={() => onAdd(card)}
@@ -40,7 +40,7 @@ export function SearchCardItem({ card, onAdd, disabled }: SearchCardItemProps) {
           />
         )}
       </div>
-      <div className="">
+      <div className="p-2">
         <p className="text-xs font-medium truncate">{card.name}</p>
         <p className="text-[10px] text-muted-foreground truncate">
           #{card.number}
