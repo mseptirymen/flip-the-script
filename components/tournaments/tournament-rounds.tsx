@@ -14,9 +14,11 @@ import { cn } from "@/lib/utils"
 
 interface TournamentRoundsProps {
   tournamentId: string
+  className?: string
+  onRecordUpdated?: (wins: number, losses: number) => void
 }
 
-export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
+export function TournamentRounds({ tournamentId, className, onRecordUpdated }: TournamentRoundsProps) {
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [rounds, setRounds] = useState<Round[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -33,6 +35,18 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
     setTournament(tournamentData)
     setRounds(roundsData)
     setIsLoading(false)
+
+    const totalWins = roundsData.reduce(
+      (acc, round) =>
+        acc + (round.games || []).filter((g) => g.result === 'win' || g.result === 'bye').length,
+      0
+    )
+    const totalLosses = roundsData.reduce(
+      (acc, round) =>
+        acc + (round.games || []).filter((g) => g.result === 'loss').length,
+      0
+    )
+    onRecordUpdated?.(totalWins, totalLosses)
   }
 
   async function handleRoundAdded() {
@@ -62,7 +76,10 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
     const games = round.games || []
     if (games.length === 0) return 'other'
 
-    const wins = games.filter((g) => g.result === 'win').length
+    const onlyByeNoShow = games.every((g) => g.result === 'bye' || g.result === 'no_show')
+    if (onlyByeNoShow) return 'other'
+
+    const wins = games.filter((g) => g.result === 'win' || g.result === 'bye').length
     const losses = games.filter((g) => g.result === 'loss').length
     const ties = games.filter((g) => g.result === 'tie').length
 
@@ -73,8 +90,8 @@ export function TournamentRounds({ tournamentId }: TournamentRoundsProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-end justify-between">
+    <div className={cn("flex flex-col gap-4", className)}>
+      <div className="flex items-end justify-between gap-4">
         <h2 className="text-lg font-medium">Rounds</h2>
         <AddRoundDialog
           nextRoundNumber={rounds.length + 1}

@@ -19,8 +19,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getTournament } from "@/lib/db"
-import type { Tournament } from "@/lib/types"
+import { getTournament, getRoundsForTournament } from "@/lib/db"
+import type { Round, Tournament } from "@/lib/types"
 
 interface TournamentDetailPageProps {
   params: Promise<{ id: string }>
@@ -29,17 +29,30 @@ interface TournamentDetailPageProps {
 export default function TournamentDetailPage({ params }: TournamentDetailPageProps) {
   const { id } = use(params)
   const [tournament, setTournament] = useState<Tournament | null>(null)
+  const [rounds, setRounds] = useState<Round[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [record, setRecord] = useState({ wins: 0, losses: 0 })
 
   useEffect(() => {
     loadTournament()
   }, [id])
 
   async function loadTournament() {
-    const data = await getTournament(id)
-    setTournament(data || null)
+    const [tournamentData, roundsData] = await Promise.all([
+      getTournament(id),
+      getRoundsForTournament(id),
+    ])
+    setTournament(tournamentData || null)
+    setRounds(roundsData)
     setIsLoading(false)
   }
+
+  function handleRecordUpdated(wins: number, losses: number) {
+    setRecord({ wins, losses })
+  }
+
+  const totalWins = record.wins
+  const totalLosses = record.losses
 
   if (isLoading) {
     return (
@@ -98,13 +111,20 @@ export default function TournamentDetailPage({ params }: TournamentDetailPagePro
         </header>
         <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
           <div className="mx-auto w-full max-w-xl">
-            <div>
-              <h1 className="text-2xl font-bold">{tournament.name}</h1>
-              {tournament.date && (
-                <p className="text-sm text-muted-foreground mt-1">{tournament.date}</p>
+            <div className="flex items-baseline justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold">{tournament.name}</h1>
+                {tournament.date && (
+                  <p className="text-sm text-muted-foreground mt-1">{tournament.date}</p>
+                )}
+              </div>
+              {rounds.length > 0 && (
+                <span className="text-lg font-medium">
+                  {totalWins}-{totalLosses}
+                </span>
               )}
             </div>
-            <TournamentRounds tournamentId={id} />
+            <TournamentRounds tournamentId={id} className="mt-6" onRecordUpdated={handleRecordUpdated} />
           </div>
         </div>
       </SidebarInset>
