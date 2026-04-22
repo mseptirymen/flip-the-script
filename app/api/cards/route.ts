@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const pokemonSets = sets.filter((s) => {
       const name = s.name.toLowerCase()
       const abbr = s.abbreviation?.toLowerCase() || ""
-      const excludeTerms = ["magic", "yu-gi-oh", "mtg", "yugioh", "force", "weiss", "digimon", "onepiece", "dragonball", "world championship"]
+      const excludeTerms = ["magic", "yu-gi-oh", "mtg", "yugioh", "force", "weiss", "digimon", "onepiece", "dragonball", "world championship", "prize", "jumbo"]
       const isExcluded = excludeTerms.some((term) => name.includes(term))
       return !isExcluded
     })
