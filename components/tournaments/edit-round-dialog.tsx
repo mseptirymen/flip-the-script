@@ -117,7 +117,7 @@ export function EditRoundDialog({
       .filter((g) => g.result !== null)
       .map((g) => ({
         result: g.result as GameResult,
-        went_first: g.went_first ?? false
+        went_first: g.went_first
       }))
 
     setIsSubmitting(true)
@@ -231,7 +231,7 @@ export function EditRoundDialog({
                     size="sm"
                     className={cn(
                       "min-w-[4rem]",
-                      !isByeOrNoShow && "bg-primary/20"
+                      !isByeOrNoShow && "bg-input/50"
                     )}
                     onClick={() => {
                       setIsByeOrNoShow(false)
@@ -246,7 +246,7 @@ export function EditRoundDialog({
                     size="sm"
                     className={cn(
                       "min-w-[4rem]",
-                      isByeOrNoShow && byeNoShowType === 'bye' && "bg-primary/20"
+                      isByeOrNoShow && byeNoShowType === 'bye' && "bg-input/50"
                     )}
                     onClick={() => {
                       setIsByeOrNoShow(true)
@@ -261,7 +261,7 @@ export function EditRoundDialog({
                     size="sm"
                     className={cn(
                       "min-w-[4rem]",
-                      isByeOrNoShow && byeNoShowType === 'no_show' && "bg-primary/20"
+                      isByeOrNoShow && byeNoShowType === 'no_show' && "bg-input/50"
                     )}
                     onClick={() => {
                       setIsByeOrNoShow(true)
@@ -321,7 +321,7 @@ export function EditRoundDialog({
                                   size="sm"
                                   className={cn(
                                     "w-10 h-8",
-                                    game.result === option.value && "bg-primary/20"
+                                    game.result === option.value && "bg-input/50"
                                   )}
                                   onClick={() => updateGame(index, { result: game.result === option.value ? null : option.value })}
                                 >
@@ -338,7 +338,7 @@ export function EditRoundDialog({
                                   size="sm"
                                   className={cn(
                                     "w-10 h-8",
-                                    game.went_first === true && "bg-primary/20"
+                                    game.went_first === true && "bg-input/50"
                                   )}
                                   onClick={() => updateGame(index, { went_first: game.went_first === true ? null : true })}
                                 >
@@ -350,7 +350,7 @@ export function EditRoundDialog({
                                   size="sm"
                                   className={cn(
                                     "w-10 h-8",
-                                    game.went_first === false && "bg-primary/20"
+                                    game.went_first === false && "bg-input/50"
                                   )}
                                   onClick={() => updateGame(index, { went_first: game.went_first === false ? null : false })}
                                 >

@@ -98,11 +98,11 @@ export function AddRoundDialog({
     const roundResult = calculateRoundResult(games)
     if (!roundResult) return
 
-    const completeGames: { result: GameResult | RoundResult; went_first: boolean }[] = games
+    const completeGames: { result: GameResult | RoundResult; went_first: boolean | null }[] = games
       .filter((g) => g.result !== null)
       .map((g) => ({
         result: g.result as GameResult,
-        went_first: g.wentFirst ?? false
+        went_first: g.wentFirst
       }))
 
     if (completeGames.length === 0) return
@@ -179,7 +179,7 @@ export function AddRoundDialog({
                   size="sm"
                   className={cn(
                     "min-w-[4rem]",
-                    !isByeOrNoShow && "bg-primary/20"
+                    !isByeOrNoShow && "bg-input/50"
                   )}
                   onClick={() => {
                     setIsByeOrNoShow(false)
@@ -194,7 +194,7 @@ export function AddRoundDialog({
                   size="sm"
                   className={cn(
                     "min-w-[4rem]",
-                    isByeOrNoShow && byeNoShowType === 'bye' && "bg-primary/20"
+                    isByeOrNoShow && byeNoShowType === 'bye' && "bg-input/50"
                   )}
                   onClick={() => {
                     setIsByeOrNoShow(true)
@@ -209,7 +209,7 @@ export function AddRoundDialog({
                   size="sm"
                   className={cn(
                     "min-w-[4rem]",
-                    isByeOrNoShow && byeNoShowType === 'no_show' && "bg-primary/20"
+                    isByeOrNoShow && byeNoShowType === 'no_show' && "bg-input/50"
                   )}
                   onClick={() => {
                     setIsByeOrNoShow(true)
@@ -269,7 +269,7 @@ export function AddRoundDialog({
                                 size="sm"
                                 className={cn(
                                   "w-10 h-8",
-                                  game.result === option.value && "bg-primary/20"
+                                  game.result === option.value && "bg-input/50"
                                 )}
                                 onClick={() => updateGame(index, { result: game.result === option.value ? null : option.value })}
                               >
@@ -286,7 +286,7 @@ export function AddRoundDialog({
                                 size="sm"
                                 className={cn(
                                   "w-10 h-8",
-                                  game.wentFirst === true && "bg-primary/20"
+                                  game.wentFirst === true && "bg-input/50"
                                 )}
                                 onClick={() => updateGame(index, { wentFirst: game.wentFirst === true ? null : true })}
                               >
@@ -298,7 +298,7 @@ export function AddRoundDialog({
                                 size="sm"
                                 className={cn(
                                   "w-10 h-8",
-                                  game.wentFirst === false && "bg-primary/20"
+                                  game.wentFirst === false && "bg-input/50"
                                 )}
                                 onClick={() => updateGame(index, { wentFirst: game.wentFirst === false ? null : false })}
                               >
