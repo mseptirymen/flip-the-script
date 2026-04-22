@@ -24,6 +24,11 @@ interface CacheEntry {
   timestamp: number
 }
 
+interface FetchResult {
+  products: TCGProduct[]
+  setAbbrev: string
+}
+
 const setCache = new Map<string, CacheEntry>()
 const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 
@@ -31,10 +36,10 @@ function isCacheValid(entry: CacheEntry): boolean {
   return Date.now() - entry.timestamp < CACHE_TTL
 }
 
-async function fetchSetWithCache(setId: string): Promise<TCGProduct[]> {
+async function fetchSetWithCache(setId: string, setAbbrev: string): Promise<FetchResult> {
   const cached = setCache.get(setId)
   if (cached && isCacheValid(cached)) {
-    return cached.products
+    return { products: cached.products, setAbbrev }
   }
 
   const res = await fetch(`https://tcgtracking.com/tcgapi/v1/3/sets/${setId}`)
@@ -43,7 +48,7 @@ async function fetchSetWithCache(setId: string): Promise<TCGProduct[]> {
   const cards = products.filter(isCardProduct)
 
   setCache.set(setId, { products: cards, timestamp: Date.now() })
-  return cards
+  return { products: cards, setAbbrev }
 }
 
 function isCardProduct(product: TCGProduct): boolean {
@@ -76,15 +81,19 @@ export async function GET(request: Request) {
     const results = await Promise.all(
       pokemonSets.map(async (set) => {
         try {
-          return await fetchSetWithCache(String(set.id))
+          return await fetchSetWithCache(String(set.id), set.abbreviation || "")
         } catch {
-          return []
+          return { products: [], setAbbrev: "" }
         }
       })
     )
 
-    for (const cards of results) {
-      allProducts.push(...cards)
+    for (const result of results) {
+      const withAbbrev = result.products.map((p) => ({
+        ...p,
+        set_abbreviation: p.set_abbreviation || result.setAbbrev,
+      }))
+      allProducts.push(...withAbbrev)
     }
 
     const query = q.toLowerCase()
@@ -102,6 +111,7 @@ export async function GET(request: Request) {
       number: p.number,
       image_url: p.image_url,
       rarity: p.rarity,
+      set_abbreviation: p.set_abbreviation || "",
     }))
 
     return NextResponse.json(mapped)
@@ -123,7 +133,7 @@ export async function POST() {
       return !excludeTerms.some((term) => name.includes(term))
     })
 
-    await Promise.all(pokemonSets.map((set) => fetchSetWithCache(String(set.id))))
+    await Promise.all(pokemonSets.map((set) => fetchSetWithCache(String(set.id), set.abbreviation || "")))
 
     return NextResponse.json({ cached: setCache.size })
   } catch (error) {

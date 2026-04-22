@@ -11,6 +11,7 @@ interface CardSearchResult {
   number: string
   image_url: string
   rarity: string
+  set_abbreviation?: string
 }
 
 interface SearchCardItemProps {
@@ -43,7 +44,7 @@ export function SearchCardItem({ card, onAdd, disabled }: SearchCardItemProps) {
       <div className="p-2">
         <p className="text-xs font-medium truncate">{card.name}</p>
         <p className="text-[10px] text-muted-foreground truncate">
-          #{card.number}
+          {card.set_abbreviation ? `${card.set_abbreviation} #${card.number}` : `#${card.number}`}
         </p>
       </div>
       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

@@ -295,7 +295,7 @@ export default function DeckDetailPage() {
                   </div>
                 )}
 
-                <div className="flex justify-end gap-2 mt-auto">
+                <div className="flex flex-row justify-end gap-2">
                   <Button
                     variant="outline"
                     onClick={() => router.push("/deck")}
