@@ -21,3 +21,12 @@ export interface Round {
   games: Game[];
   created_at: string;
 }
+
+export interface Deck {
+  id: string;
+  user_id: string;
+  name: string;
+  sprite_id_1: number;
+  sprite_id_2: number;
+  created_at: string;
+}

@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { TrophyIcon, BarChartIcon } from "lucide-react"
+import { TrophyIcon, BarChartIcon, HexagonIcon } from "lucide-react"
 import { useAuth } from "@/components/providers/auth-provider"
 
 const data = {
@@ -28,6 +28,13 @@ const data = {
       title: "Stats",
       url: "#",
       icon: <BarChartIcon />,
+    },
+  ],
+  navDeck: [
+    {
+      title: "Deck Builder",
+      url: "/deck",
+      icon: <HexagonIcon />,
     },
   ],
 }
@@ -59,6 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavMain items={data.navDeck} label="Deck" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />
