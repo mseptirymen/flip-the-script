@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import {
@@ -52,11 +52,27 @@ export default function DeckDetailPage() {
   const [searchResults, setSearchResults] = useState<CardSearchResult[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [searching, setSearching] = useState(false)
+  const cardCacheRef = useRef<CardSearchResult[]>([])
+  const [cacheReady, setCacheReady] = useState(false)
 
   useEffect(() => {
     loadDeck()
     loadDeckCards()
   }, [deckId])
+
+  useEffect(() => {
+    async function preFetchCards() {
+      try {
+        const res = await fetch("/api/cards?q=")
+        const data = await res.json()
+        cardCacheRef.current = data
+        setCacheReady(true)
+      } catch (error) {
+        console.error("Pre-fetch failed:", error)
+      }
+    }
+    preFetchCards()
+  }, [])
 
   async function loadDeck() {
     try {
@@ -93,14 +109,25 @@ export default function DeckDetailPage() {
   }
 
   async function handleSearch() {
+    if (!searchQuery.trim()) return
+
     setSearching(true)
     try {
-      const params = new URLSearchParams()
-      if (searchQuery) params.set("q", searchQuery)
-
-      const res = await fetch(`/api/cards?${params}`)
-      const data = await res.json()
-      setSearchResults(data)
+      if (cacheReady && cardCacheRef.current.length > 0) {
+        const query = searchQuery.toLowerCase()
+        const filtered = cardCacheRef.current.filter(
+          (p) =>
+            p.name?.toLowerCase().includes(query) ||
+            p.number?.toLowerCase().includes(query)
+        )
+        setSearchResults(filtered.slice(0, 20))
+      } else {
+        const params = new URLSearchParams()
+        params.set("q", searchQuery)
+        const res = await fetch(`/api/cards?${params}`)
+        const data = await res.json()
+        setSearchResults(data)
+      }
     } catch (error) {
       console.error("Search failed:", error)
     } finally {
