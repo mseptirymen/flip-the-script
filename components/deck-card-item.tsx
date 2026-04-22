@@ -69,19 +69,21 @@ interface DeckCardItemProps {
 export function DeckCardItem({ card, onRemove }: DeckCardItemProps) {
   return (
     <Card
-      className="relative group cursor-pointer overflow-hidden"
+      className="relative group cursor-pointer overflow-hidden rounded-sm p-0 h-fit gap-0"
       onClick={() => onRemove(card.id)}
     >
-      {card.image_url && (
-        <div className="relative w-full aspect-[5/7]">
+      <div className="w-full relative">
+        {card.image_url && (
           <Image
             src={card.image_url}
             alt={card.name}
-            fill
-            className="object-cover"
+            width={200}
+            height={267}
+            sizes="200px"
+            className="object-cover w-full"
           />
-        </div>
-      )}
+        )}
+      </div>
       <div className="absolute top-1 right-1">
         {card.quantity > 1 && (
           <Badge className="bg-primary text-primary-foreground">

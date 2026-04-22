@@ -161,22 +161,7 @@ export default function DeckDetailPage() {
     }
   }
 
-  const pokemonCards = deckCards.filter((c) => c.pokemon_type)
-  const trainerCards = deckCards.filter(
-    (c) => !c.pokemon_type && c.name.toLowerCase().includes("trainer")
-  )
-  const energyCards = deckCards.filter(
-    (c) =>
-      !c.pokemon_type &&
-      !c.name.toLowerCase().includes("trainer") &&
-      c.name.toLowerCase().includes("energy")
-  )
-  const otherCards = deckCards.filter(
-    (c) =>
-      !c.pokemon_type &&
-      !c.name.toLowerCase().includes("trainer") &&
-      !c.name.toLowerCase().includes("energy")
-  )
+  
 
   return (
     <SidebarProvider>
@@ -209,13 +194,21 @@ export default function DeckDetailPage() {
 ) : (
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="w-full lg:w-[60%] flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">Deck Cards</h2>
-                  <Badge
-                    variant={deckCards.length >= 60 ? "destructive" : "secondary"}
-                  >
-                    {deckCards.length}/60 cards
-                  </Badge>
+                <div className="flex items-end justify-between gap-2">
+                  <h2 className="text-lg font-semibold">{deck?.name || "Deck Cards"}</h2>
+                  <div className="flex items-end gap-2">
+                    <Badge
+                      variant={deckCards.length >= 60 ? "destructive" : "secondary"}
+                    >
+                      {deckCards.length}/60 cards
+                    </Badge>
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving}
+                    >
+                      {saving ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </div>
                 </div>
 
                 {deckCards.length === 0 ? (
@@ -227,88 +220,16 @@ export default function DeckDetailPage() {
                     </p>
                   </Card>
                 ) : (
-                  <div className="flex flex-col gap-4">
-                    {pokemonCards.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                          Pokémon ({pokemonCards.length})
-                        </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                          {pokemonCards.map((card) => (
-                            <DeckCardItem
-                              key={card.id}
-                              card={card}
-                              onRemove={handleRemoveCard}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {trainerCards.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                          Trainers ({trainerCards.length})
-                        </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                          {trainerCards.map((card) => (
-                            <DeckCardItem
-                              key={card.id}
-                              card={card}
-                              onRemove={handleRemoveCard}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {energyCards.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                          Energy ({energyCards.length})
-                        </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                          {energyCards.map((card) => (
-                            <DeckCardItem
-                              key={card.id}
-                              card={card}
-                              onRemove={handleRemoveCard}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {otherCards.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                          Other ({otherCards.length})
-                        </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                          {otherCards.map((card) => (
-                            <DeckCardItem
-                              key={card.id}
-                              card={card}
-                              onRemove={handleRemoveCard}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {deckCards.map((card) => (
+                      <DeckCardItem
+                        key={card.id}
+                        card={card}
+                        onRemove={handleRemoveCard}
+                      />
+                    ))}
                   </div>
                 )}
-
-                <div className="flex flex-row justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push("/deck")}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
-                    {saving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
               </div>
 
               <div className="w-full lg:w-[40%]">
