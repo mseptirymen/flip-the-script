@@ -260,7 +260,7 @@ export function AddRoundDialog({
                         <div key={index} className="flex flex-col items-start gap-2">
                           <span className="text-sm font-medium text-muted-foreground">Game {index + 1}</span>
 
-                          <div className="flex items-center gap-1">
+                          <div className="flex flex-row gap-1">
                             {gameResultOptions.map((option) => (
                               <Button
                                 key={option.value}
@@ -279,7 +279,7 @@ export function AddRoundDialog({
                           </div>
 
                           {game.result !== null ? (
-                            <div className="flex items-center gap-1">
+                            <div className="flex flex-row gap-1">
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -316,7 +316,7 @@ export function AddRoundDialog({
               </>
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-1 mt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
@@ -324,7 +324,7 @@ export function AddRoundDialog({
               type="submit"
               disabled={!isValid || isSubmitting}
             >
-              {isSubmitting ? "Saving..." : "Save"}
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

@@ -195,7 +195,7 @@ export function EditRoundDialog({
                 This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -368,7 +368,7 @@ export function EditRoundDialog({
                 </>
               )}
             </div>
-            <DialogFooter className="gap-1">
+            <DialogFooter className="gap-1 mt-4">
               <Button
                 type="button"
                 variant="ghost"
